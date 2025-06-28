@@ -29,6 +29,10 @@ public class Achievement {
         public String getDisplayName() {
             return displayName;
         }
+        
+        public String getDescription() {
+            return displayName + " achievements";
+        }
     }
 
     private final String id;
