@@ -85,7 +85,7 @@ public class ChatManager {
             return;
         }
 
-        String teamColor = ctfPlayer.getTeam().getColor().getColorCode();
+        String teamColor = ctfPlayer.getTeam().getColorCode();
         String template = teamColor + "[TEAM] " + plugin.getConfigManager().getScoreboards().getString("chat.format",
                 "&7[{level}] {team_prefix}{player}: &f{message}");
 
