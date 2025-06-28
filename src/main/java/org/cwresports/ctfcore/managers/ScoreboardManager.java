@@ -310,11 +310,16 @@ public class ScoreboardManager {
     }
 
     /**
-     * Process game playing placeholders
+     * Process game playing placeholders (enhanced with time and team info)
      */
     private String processGamePlayingPlaceholders(Player player, CTFPlayer ctfPlayer, CTFGame game, String text) {
         // Arena info
         text = text.replace("{arena}", game.getArena().getName());
+
+        // Time remaining
+        long timeLeft = game.getTimeRemaining();
+        String timeFormat = String.format("%02d:%02d", timeLeft / 60, timeLeft % 60);
+        text = text.replace("{time_remaining}", timeFormat);
 
         // Player info
         text = text.replace("{level}", String.valueOf(ctfPlayer.getLevel()));
@@ -326,9 +331,11 @@ public class ScoreboardManager {
             String teamDisplay = plugin.getConfigManager().getScoreboards().getString(
                     "placeholders.team-display." + ctfPlayer.getTeam().getName(), ctfPlayer.getTeam().getColorCode() + ctfPlayer.getTeam().getName().toUpperCase());
             text = text.replace("{team_display}", teamDisplay);
+            text = text.replace("{your_team_score}", String.valueOf(game.getScore(ctfPlayer.getTeam().getColor())));
         } else {
             text = text.replace("{team_display}", plugin.getConfigManager().getScoreboards().getString(
-                    "placeholders.team-display.none", "&7Not Assigned"));
+                    "placeholders.team-display.none", "&7None"));
+            text = text.replace("{your_team_score}", "0");
         }
 
         // Game scores
