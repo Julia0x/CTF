@@ -78,13 +78,7 @@ public class GameManager {
         // Give lobby items
         plugin.getLobbyManager().giveLobbyItems(player);
 
-        // Send join message to the player ONLY - FIXED DUPLICATE MESSAGE
-        Map<String, String> placeholders = new HashMap<>();
-        placeholders.put("arena", arena.getName());
-        placeholders.put("current_players", String.valueOf(game.getPlayers().size()));
-        placeholders.put("max_players", String.valueOf(plugin.getConfigManager().getGameplaySetting("max-players-per-arena", 8)));
-        player.sendMessage(plugin.getConfigManager().getMessage("joined-game", placeholders));
-
+        // Join message removed as requested
         // Update lobby boss bar
         plugin.getMessageManager().updateLobbyBossBar(game);
 
