@@ -157,6 +157,15 @@ public class CTFCore extends JavaPlugin {
             }
         }
 
+        // ENHANCED: Shutdown tab list manager
+        if (tabListManager != null) {
+            try {
+                tabListManager.shutdown();
+            } catch (Exception e) {
+                getLogger().warning("Could not shutdown tab list manager: " + e.getMessage());
+            }
+        }
+
         // ENHANCED: Clear all player data to prevent memory leaks
         try {
             getLogger().info("Cleaning up player data...");
