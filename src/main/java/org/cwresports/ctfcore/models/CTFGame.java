@@ -104,23 +104,10 @@ public class CTFGame {
             placeholders.put("current_players", String.valueOf(players.size()));
             placeholders.put("max_players", "8");
 
-            // Broadcast to OTHER players in the arena only
-            String message = plugin.getConfigManager().getMessage("player-left-arena", placeholders);
-            World arenaWorld = arena.getWorld();
-
-            for (CTFPlayer otherPlayer : players) {
-                if (otherPlayer.getPlayer() != null && otherPlayer.getPlayer().isOnline() &&
-                        otherPlayer.getPlayer().getWorld().equals(arenaWorld)) {
-                    otherPlayer.getPlayer().sendMessage(message);
-                }
-            }
+            // Player left arena message removed as requested
         }
 
-        // Send confirmation message to the leaving player
-        String leaveConfirmation = plugin.getConfigManager().getMessage("left-game", new HashMap<>());
-        if (player.getPlayer() != null && player.getPlayer().isOnline()) {
-            player.getPlayer().sendMessage(leaveConfirmation);
-        }
+        // Leave confirmation message removed as requested
     }
 
     /**
