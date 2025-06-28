@@ -5,6 +5,7 @@ import org.cwresports.ctfcore.CTFCore;
 import org.cwresports.ctfcore.cosmetics.models.Achievement;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Manages player achievements and rewards
