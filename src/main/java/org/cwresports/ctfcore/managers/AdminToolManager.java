@@ -547,11 +547,11 @@ public class AdminToolManager {
         }
 
         // Handle dashboard clicks
-        if (title.equals("Arena Dashboard")) {
-            if (displayName.equals("§c§lClose Dashboard")) {
+        if (title.startsWith("§7Arena: §e")) {
+            if (displayName.equals("§c§lClose")) {
                 player.closeInventory();
                 return true;
-            } else if (displayName.contains("SAVE & ENABLE ARENA")) {
+            } else if (displayName.contains("SAVE ARENA")) {
                 player.closeInventory();
                 Arena arena = plugin.getArenaManager().getArena(arenaName);
                 if (arena != null) {
