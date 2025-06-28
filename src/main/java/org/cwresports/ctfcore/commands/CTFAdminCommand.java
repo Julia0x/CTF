@@ -869,6 +869,22 @@ public class CTFAdminCommand implements CommandExecutor, TabCompleter {
                         .filter(s -> s.toLowerCase().startsWith(args[2].toLowerCase()))
                         .collect(Collectors.toList());
             }
+            
+            if (subcommand.equals("leaderboard")) {
+                String action = args[1].toLowerCase();
+                if (action.equals("create")) {
+                    return Arrays.asList("kills", "captures", "level", "games_won")
+                            .stream()
+                            .filter(s -> s.toLowerCase().startsWith(args[2].toLowerCase()))
+                            .collect(Collectors.toList());
+                } else if (Arrays.asList("delete", "move", "setsize").contains(action)) {
+                    return plugin.getHologramLeaderboardManager().getAllLeaderboards()
+                            .stream()
+                            .map(lb -> lb.getId())
+                            .filter(s -> s.toLowerCase().startsWith(args[2].toLowerCase()))
+                            .collect(Collectors.toList());
+                }
+            }
         }
 
         if (args.length == 4 && args[0].equalsIgnoreCase("setspawn")) {
