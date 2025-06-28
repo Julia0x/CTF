@@ -112,6 +112,12 @@ public class CTFPlaceholderExpansion extends PlaceholderExpansion {
                 return ctfPlayer.hasFlag() ? "true" : "false";
             case "carrying_flag":
                 return ctfPlayer.hasFlag() ? ctfPlayer.getCarryingFlag().getTeam().getName() : "none";
+            case "carrying_flag_display":
+                if (ctfPlayer.hasFlag()) {
+                    org.cwresports.ctfcore.models.Arena.TeamColor flagTeam = ctfPlayer.getCarryingFlag().getTeam();
+                    return flagTeam.getColorCode() + "🚩 " + flagTeam.getName().toUpperCase() + " FLAG";
+                }
+                return "";
 
             // Arena information
             case "arena":
