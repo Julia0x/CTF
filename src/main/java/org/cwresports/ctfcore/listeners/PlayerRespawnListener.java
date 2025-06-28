@@ -39,6 +39,15 @@ public class PlayerRespawnListener implements Listener {
             return;
         }
         
+        // Check if this player is dead and in our respawn countdown system
+        // If so, we'll handle respawn manually - just set a safe location
+        if (!ctfPlayer.isAlive()) {
+            Arena arena = game.getArena();
+            // Set respawn location to arena lobby (we'll teleport them properly in our countdown)
+            event.setRespawnLocation(arena.getLobbySpawn());
+            return;
+        }
+        
         Arena arena = game.getArena();
         Arena.TeamColor team = ctfPlayer.getTeam();
         
