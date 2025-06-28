@@ -120,10 +120,10 @@ public class ScoreboardManager {
             scoreboard.resetScores(entry);
         }
 
-        // Get CTF player data for level info
+        // Get CTF player data for level info - always get fresh data
         CTFPlayer ctfPlayer = plugin.getGameManager().getCTFPlayer(player);
         if (ctfPlayer == null) {
-            // Load player data
+            // Load fresh player data
             Map<String, Object> playerData = plugin.getPlayerDataManager().loadPlayerData(player.getUniqueId());
             ctfPlayer = new org.cwresports.ctfcore.models.CTFPlayer(player, playerData);
         }
