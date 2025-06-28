@@ -122,6 +122,7 @@ public class CTFPlayerCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
+        plugin.getGameManager().removePlayerFromGame(player);
         // Leave message removed as requested
 
         return true;
