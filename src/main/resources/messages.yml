@@ -1,0 +1,185 @@
+# CTF-Core Messages Configuration
+# Supports color codes (&) and placeholders: {player}, {arena}, {team_name}, {team_color}, {flag_count}, {time_left}
+
+plugin-prefix: "&e[CTF] &r"
+
+# General messages
+no-permission: "&c❌ You don't have permission to use this command."
+player-only: "&c❌ This command can only be used by players."
+unknown-command: "&c❌ Unknown command. Use &e/ctf help &cfor available commands."
+plugin-reloaded: "&a✅ Plugin configuration reloaded successfully."
+
+# Arena management messages
+arena-created: "&a✅ Arena &e{arena} &acreated successfully!\n&7   Use the admin toolkit to set up the arena."
+arena-already-exists: "&c❌ Arena &e{arena} &calready exists."
+arena-not-found: "&c❌ Arena &e{arena} &cnot found."
+arena-enabled: "&a✅ Arena &e{arena} &ais now &aenabled &aand ready for play!"
+arena-disabled: "&e⚠ Arena &e{arena} &ehas been disabled."
+arena-deleted: "&c🗑 Arena &e{arena} &chas been deleted."
+arena-incomplete-deleted: "&c🗑 Incomplete arena &e{arena} &chas been deleted due to incomplete setup."
+
+# Server lobby messages
+server-lobby-set: "&a✅ Server lobby spawn point has been set at your current location."
+server-lobby-not-set: "&c❌ Server lobby spawn point has not been configured.\n&7   Use &e/ctfadmin setserverlobby&7."
+teleported-to-server-lobby: "&a🏠 Teleported to server lobby."
+
+# WorldGuard integration
+worldguard-region-not-found: "&c❌ WorldGuard region &e{region} &cnot found in world &e{world}&c."
+worldguard-not-available: "&c❌ WorldGuard is not available. Please install WorldGuard to use this plugin."
+
+# Setup messages
+setup-lobby-set: "&a✅ Lobby spawn set for arena &e{arena}&a."
+setup-spawn-set: "&a✅ Spawn point &e{spawn_number} &aset for {team_color}{team_name} team &ain arena &e{arena}&a."
+setup-flag-mode: "&a🚩 Flag setup mode activated.\n&7   Break the banner you want to set as the flag for {team_color}{team_name} team&7."
+setup-flag-set: "&a✅ Flag location set for {team_color}{team_name} team &ain arena &e{arena}&a."
+setup-capture-mode: "&a📍 Capture point setup mode activated.\n&7   Right-click the block you want to set as capture point for {team_color}{team_name} team&7."
+setup-capture-set: "&a✅ Capture point set for {team_color}{team_name} team &ain arena &e{arena}&a."
+setup-must-break-banner: "&c❌ You must break a banner block to set the flag location."
+setup-wrong-banner-color: "&c❌ You must break a banner that matches the team color ({team_color}{team_name}&c)."
+setup-cancelled: "&e⚠ Setup mode cancelled."
+
+# Validation messages
+validation-success: "&a✅ All arena requirements met! Arena &e{arena} &ais ready to be enabled."
+validation-failed: "&c❌ Arena &e{arena} &cis not fully configured.\n&7   Use &e/ctfadmin status {arena} &7to see missing requirements."
+validation-incomplete-save-blocked: "&c❌ Cannot save arena &e{arena}&c.\n&7   Complete all setup requirements first."
+
+# Status display
+status-header: "&e&l=== Arena Status: {arena} ===&r"
+status-enabled: "&aEnabled: &e{enabled}"
+status-world: "&aWorld: &e{world}"
+status-region: "&aWorldGuard Region: &e{region}"
+status-lobby: "&aLobby Spawn: {status}"
+status-team-header: "{team_color}&l{team_name} Team:"
+status-spawns: "&aSpawn Points: {status} &7({count}/4)"
+status-flag: "&aFlag Location: {status}"
+status-capture: "&aCapture Point: {status}"
+status-complete: "&a✔"
+status-incomplete: "&c✖"
+status-footer: "&e&l========================&r"
+
+# Game messages - CLEANED UP WITH BETTER SPACING
+game-starting: "&a⏱ Game starting in &e{time} &aseconds!"
+game-started: "\n&a&l🎮 GAME STARTED!\n&7   Capture &e{flags_to_win} &7flags to win or get &e{kills_to_win} &7kills!\n"
+game-force-started: "&c&l⚡ GAME FORCE STARTED! &aArena: &e{arena}"
+game-ended: "\n&e&l🏁 GAME ENDED!\n"
+game-won: "\n{team_color}&l🏆 {team_name} TEAM WINS! 🏆\n"
+game-won-kills: "\n{team_color}&l⚔ {team_name} TEAM WINS BY KILLS! ⚔\n"
+game-won-combined: "\n{team_color}&l🏆 {team_name} TEAM WINS BY COMBINED SCORE! 🏆\n"
+game-won-elimination: "\n{team_color}&l🎯 {team_name} TEAM WINS BY ELIMINATION! 🎯\n"
+game-draw: "\n&e&l🤝 GAME ENDED IN A DRAW! 🤝\n"
+game-not-enough-players: "&c❌ Not enough players to start the game.\n&7   Need at least &e{min_players}&7 players."
+game-full: "&c❌ This arena is full! ({current_players}/{max_players})"
+countdown-stopped: "&c⏹ Countdown stopped! Not enough players.\n&7   Need at least &e{min_players}&7 players."
+countdown-cancelled: "&c⏹ Countdown cancelled! Need at least &e{min_players}&7 players to start."
+flags-tied-at-2: "\n&e&l⚡ FLAGS TIED AT 2-2! ⚡\n&7Combined scoring now active: &e1 Flag = 10 points, 1 Kill = 1 point\n"
+
+# Game end messages - CLEANER FORMAT
+game-stats-header: "\n&e&l=== 📊 GAME STATISTICS 📊 ===\n"
+game-stats-winner: "&aWinning Team: {team_color}&l{team_name}"
+game-stats-best-killer: "&6🗡 Best Killer: &e{player} &7({kills} kills)"
+game-stats-your-stats: "&b📈 Your Stats: &f{kills} kills, {deaths} deaths, {captures} captures | &6Level {level} &7({xp} XP)"
+
+# Lobby messages - CLEANER
+lobby-waiting: "&e⏳ Waiting for players... ({current}/{min} needed)"
+lobby-countdown: "&a⏱ Game starts in &e{time} &aseconds!"
+lobby-select-team: "&a👥 Click to select your team!"
+lobby-leave-game: "&c🚪 Click to leave the game!"
+lobby-team-full: "&c❌ This team is full! ({current}/{max} players)"
+
+# Player actions - REDUCED NOISE - FIXED DUPLICATE MESSAGE
+joined-game: "&a✅ You joined the game in arena &e{arena}&a. ({current_players}/{max_players})"
+left-game: "&e🚪 You left the game."
+player-left-arena: "&e👥 &e{player} &eleft the arena. ({current_players}/{max_players})"
+assigned-to-team: "&a👥 You have been assigned to the {team_color}{team_name} team&a."
+already-in-game: "&c❌ You are already in a CTF game."
+
+# Flag events - CLEAN AND SPACED PROPERLY
+flag-taken: "{team_color}{player} &atook the {enemy_color}{enemy_team} &aflag!"
+flag-captured: "\n{team_color}{player} &a&lCAPTURED&a the {enemy_color}{enemy_team} &aflag! &7({team_score}/{flags_to_win})\n"
+flag-dropped: "{team_color}{player} &edropped the {enemy_color}{enemy_team} &eflag!"
+flag-returned-clean: "&a✅ {team_color}Flag returned &aby {player}"
+flag-returned-disconnect: "&e⚠ {team_color}Flag returned &e- {player} disconnected"
+flag-already-taken: "&c❌ The flag is already taken!"
+flag-own-team: "&c❌ You cannot take your own team's flag!"
+flag-must-return: "&c⚠ You must return your flag before capturing the enemy flag!"
+capture-flag-hint: "&a&l💡 Right-click and hold the capture point for 3 seconds to capture the flag!"
+capture-point-too-far: "&c❌ You must be closer to your capture point to capture the flag!"
+no-flag-to-capture: "&c❌ You are not carrying a flag!"
+
+# Combat messages - SIMPLIFIED
+player-killed: "{killer_color}{killer} &eeliminated {victim_color}{victim}&e!"
+killed-flag-carrier: "{killer_color}{killer} &eeliminated flag carrier {victim_color}{victim}&e!"
+respawning: "&e⏱ Respawning in &c{time} &eseconds..."
+powerup-spawned: "&d⚡ A {powerup} &dhas spawned!"
+powerup-collected: "&a§l⚡ POWER-UP! &r{powerup} &aactivated!"
+
+# Kill streak messages - CLEANER
+killstreak-spree: "&e⚡ {player} &eis on a &c&lKILLING SPREE &e({streak})!"
+killstreak-rampage: "&c⚔ {player} &cis on a &4&lRAMPAGE &c({streak})!"
+killstreak-dominating: "&4☠ {player} &4is &l&nDOMINATING &4({streak})!"
+killstreak-unstoppable: "&5★ {player} &5is &l&nUNSTOPPABLE &5({streak})!"
+killstreak-legendary: "&6♦ {player} &6achieved &l&nLEGENDARY STATUS&6! &c({streak})"
+team-enhancement: "&aTeam {team} reached {kills} kills! Sharpness {level} granted!"
+
+# Level system messages
+level-up: "&a&l⭐ LEVEL UP! &eYou are now level &6{level}&e!"
+xp-gained: "&b+{amount} XP"
+
+# Currency system messages
+currency-earned: "&6+{amount} Coins"
+
+# Title messages - Call of Duty style
+title-flag-taken: "&c&lFLAG TAKEN!"
+title-flag-captured: "&a&lFLAG CAPTURED!"
+title-flag-dropped: "&e&lFLAG DROPPED!"
+title-flag-returned: "&a&lFLAG RETURNED!"
+title-game-start: "&a&lGAME STARTED!"
+title-game-won: "&6&lVICTORY!"
+title-game-lost: "&c&lDEFEAT!"
+title-killed: "&c&lELIMINATED!"
+title-level-up: "&6&lLE&e&lVEL &6&lUP!"
+title-performance: "&6&l{kills} &f&l/ &c&l{deaths} &f&l/ &a&l{captures}"
+subtitle-performance: "&7K/D: &f{kd} &7• &7Captures: &f{captures}"
+arena-enabled: "&a&lArena {arena} is now enabled!"
+
+# Boss bar messages - CLEAN
+bossbar-waiting: "&e⏳ Waiting for players: {current}/{min}"
+bossbar-countdown: "&a⏱ Game starts in {time} seconds"
+bossbar-kills-first: "&e⏱ {time} | Kills: {red_kills}-{blue_kills} | Flags: {red_flags}-{blue_flags}"
+bossbar-combined-scoring: "&e⏱ {time} | Combined Score: {red_score}-{blue_score} (Flag=10pts, Kill=1pt)"
+bossbar-game-time: "&e⏱ {time} | {red_score} - {blue_score}"
+bossbar-victory: "&6&l🎉 {team_color}{team_name} TEAM WINS! 🎉"
+bossbar-draw: "&e&l🤝 GAME ENDED IN A DRAW! 🤝"
+
+# Command help - BETTER FORMATTING
+help-header: "\n&e&l=== 🎮 CTF COMMANDS 🎮 ===&r\n"
+help-player-join: "&e/ctf join <arena> &7- Join a CTF game"
+help-player-leave: "&e/ctf leave &7- Leave current game"
+help-player-stats: "&e/ctf stats [player] &7- View player statistics"
+help-admin-create: "&e/ctfadmin create <arena> <region> &7- Create new arena with toolkit"
+help-admin-setup: "&e/ctfadmin setup <arena> &7- Get admin toolkit for existing arena"
+help-admin-delete: "&e/ctfadmin delete <arena> &7- Delete arena"
+help-admin-setlobby: "&e/ctfadmin setlobby <arena> &7- Set lobby spawn"
+help-admin-setspawn: "&e/ctfadmin setspawn <arena> <team> <1-4> &7- Set team spawn point"
+help-admin-setflag: "&e/ctfadmin setflag <arena> <team> &7- Set team flag location"
+help-admin-setcapture: "&e/ctfadmin setcapture <arena> <team> &7- Set team capture point"
+help-admin-status: "&e/ctfadmin status <arena> &7- View arena setup status"
+help-admin-save: "&e/ctfadmin save <arena> &7- Validate and enable arena"
+help-admin-list: "&e/ctfadmin list &7- List all arenas"
+help-admin-reload: "&e/ctfadmin reload &7- Reload plugin configuration"
+help-admin-setserverlobby: "&e/ctfadmin setserverlobby &7- Set server lobby spawn point"
+help-admin-forcestart: "&e/ctfadmin forcestart <arena> &7- Force start game with minimum 2 players"
+
+# Error messages
+error-generic: "&c❌ An error occurred. Please contact an administrator."
+error-arena-in-use: "&c❌ Arena &e{arena} &cis currently in use."
+error-not-in-game: "&c❌ You are not in a CTF game."
+error-already-in-game: "&c❌ You are already in a CTF game."
+error-invalid-team: "&c❌ Invalid team name. Valid teams: &ered&c, &eblue&c."
+error-invalid-spawn-number: "&c❌ Invalid spawn number. Must be 1, 2, 3, or 4."
+error-setup-mode-active: "&c❌ Setup mode is already active for this arena."
+error-not-setup-mode: "&c❌ No setup mode is currently active."
+error-world-not-loaded: "&c❌ World &e{world} &cis not loaded."
+
+# Boundary message
+boundary-warning: "&c⚠ You are leaving the arena! Return to the battle zone!"

@@ -1,0 +1,5 @@
+# CTF-Core Arenas Configuration
+# This file stores all arena configurations
+# DO NOT EDIT MANUALLY - Use /ctfadmin commands to manage arenas
+
+arenas: {}

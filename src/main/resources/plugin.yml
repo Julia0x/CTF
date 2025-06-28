@@ -1,0 +1,35 @@
+name: CTF-Core
+version: 1.0.0
+main: org.cwresports.ctfcore.CTFCore
+author: CWReSports
+description: Super Enhanced Capture the Flag gamemode with kill streaks, power-ups, particle effects, and epic gameplay for Paper 1.21+
+api-version: 1.21
+depend:
+  - WorldGuard
+  - WorldEdit
+softdepend:
+  - PlaceholderAPI
+  - Vault
+
+commands:
+  ctfadmin:
+    description: Administrative commands for CTF arena management
+    usage: /ctfadmin <subcommand>
+    permission: ctf.admin
+    aliases: [ctfa]
+
+  ctf:
+    description: Player commands for CTF gameplay
+    usage: /ctf <subcommand>
+    aliases: [capturetheflag]
+
+permissions:
+  ctf.admin:
+    description: Access to all CTF administrative commands
+    default: op
+  ctf.play:
+    description: Permission to join CTF games
+    default: true
+  ctf.chat.colors:
+    description: Permission to use color codes in chat
+    default: op

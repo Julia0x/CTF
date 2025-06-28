@@ -1,0 +1,124 @@
+# CTF-Core Scoreboards Configuration
+# Complete customization for all scoreboard types
+# Supports color codes (&) and placeholders
+
+# Global scoreboard settings
+global:
+  enabled: true
+  update-interval-ticks: 60  # How often to update scoreboards (3 seconds)
+
+# Server lobby scoreboard (for players not in games)
+lobby:
+  enabled: true
+  title: "&6&lCapture The Flag"
+
+  # Lines displayed on scoreboard (top to bottom)
+  lines:
+    15: "&7{date}"  # Current date
+    14: ""
+    13: "&fLevel: &a[{level}✫]"
+    12: "&fProgress: {progress_bar}"
+    9: "  "
+    8: "&fCoins: &6{coins}"
+    7: "   "
+    6: "&fTotal Wins: &a{total_wins}"
+    5: "&fTotal Kills: &a{total_kills}"
+    4: "    "
+    3: "&mc.cwresports.lk"
+
+# Game lobby scoreboard (waiting for game to start)
+game-lobby:
+  enabled: true
+  title: "&6&l*** WAITING ***"
+
+  lines:
+    15: "&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+    14: "&eArena: &f{arena}"
+    10: " "
+    9: "&eYour Team: {team_display}"
+    8: "  "
+    7: "&c&lRED: &f{red_count}/{max_per_team}"
+    6: "&9&lBLUE: &f{blue_count}/{max_per_team}"
+    5: "   "
+    1: "&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+
+# Active game scoreboard (during gameplay)
+game-playing:
+  enabled: true
+  title: "&e&lCAPTURE THE FLAG"
+
+  lines:
+    15: "&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+    14: "&eArena: &f{arena}"
+    10: " "
+    9: "&eYour Team: {team_display}"
+    8: "  "
+    7: "&c&lRED: &f{red_score}/{flags_to_win}"
+    6: "&9&lBLUE: &f{blue_score}/{flags_to_win}"
+    5: "   "
+    1: "&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+
+# Admin setup scoreboard (for arena configuration)
+admin:
+  enabled: true
+  title: "&e&lArena: {arena}"
+
+  lines:
+    15: "&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+    14: "&eArena: &f{arena}"
+    13: "&eStatus: {game_status}"
+    12: "&ePlayers: &f{player_count}"
+    11: ""
+    10: "&eLobby: {lobby_status}"
+    9: " "
+    8: "&c&lRED TEAM:"
+    7: "  Players: &f{red_players}"
+    6: "  Score: &f{red_score}"
+    5: "  Spawns: {red_spawns_status}"
+    4: "  Flag: {red_flag_status}"
+    3: "  Capture: {red_capture_status}"
+    2: "  "
+    1: "&9&lBLUE TEAM:"
+    0: "  Players: &f{blue_players}"
+    -1: "  Score: &f{blue_score}"
+    -2: "  Spawns: {blue_spawns_status}"
+    -3: "  Flag: {blue_flag_status}"
+    -4: "  Capture: {blue_capture_status}"
+    -5: "   "
+    -6: "&eReady: {ready_status}"
+    -7: "&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+
+# Placeholder formats
+placeholders:
+  # Team display formats
+  team-display:
+    red: "&c&lRED"
+    blue: "&9&lBLUE"
+    none: "&7Not Assigned"
+
+  # Status formats
+  status:
+    complete: "&a✓"
+    incomplete: "&c✗"
+    enabled: "&aEnabled"
+    disabled: "&cDisabled"
+    configured: "&aConfigured"
+    not-set: "&cNot Set"
+
+  # Game state formats
+  game-state:
+    waiting: "&7Waiting"
+    starting: "&aStarting"
+    playing: "&cPlaying"
+    ending: "&7Ending"
+
+  # Progress bar settings
+  progress-bar:
+    length: 10
+    filled-char: "█"
+    empty-char: "█"
+    filled-color: "&a"
+    empty-color: "&7"
+
+  # Date format
+  date-format: "MM/dd/yy"
