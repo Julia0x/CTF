@@ -826,6 +826,7 @@ public class CTFAdminCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(plugin.getConfigManager().getMessage("help-admin-reload"));
         sender.sendMessage(plugin.getConfigManager().getMessage("help-admin-setserverlobby"));
         sender.sendMessage(plugin.getConfigManager().getMessage("help-admin-forcestart"));
+        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&e/ctfadmin leaderboard <action> - Manage hologram leaderboards"));
     }
 
     @Override
