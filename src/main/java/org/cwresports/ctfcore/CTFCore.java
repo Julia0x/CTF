@@ -395,6 +395,14 @@ public class CTFCore extends JavaPlugin {
         return achievementManager;
     }
 
+    public org.cwresports.ctfcore.cosmetics.managers.BattlePassManager getBattlePassManager() {
+        return battlePassManager;
+    }
+
+    public org.cwresports.ctfcore.cosmetics.managers.ShopManager getShopManager() {
+        return shopManager;
+    }
+
     public boolean isPlaceholderAPIEnabled() {
         return placeholderAPIEnabled;
     }
