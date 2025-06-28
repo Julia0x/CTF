@@ -37,6 +37,10 @@ public class CTFCore extends JavaPlugin {
     private AdminToolManager adminToolManager;
     private CurrencyManager currencyManager;
     private TabListManager tabListManager;
+    
+    // Cosmetics managers
+    private org.cwresports.ctfcore.cosmetics.managers.CosmeticsManager cosmeticsManager;
+    private org.cwresports.ctfcore.cosmetics.managers.AchievementManager achievementManager;
 
     // PlaceholderAPI integration
     private boolean placeholderAPIEnabled = false;
