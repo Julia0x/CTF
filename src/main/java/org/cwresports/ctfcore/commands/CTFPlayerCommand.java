@@ -55,6 +55,10 @@ public class CTFPlayerCommand implements CommandExecutor, TabCompleter {
                 return handleStats(player, args);
             case "team":
                 return handleTeam(player, args);
+            case "chat":
+            case "chathelp":
+                plugin.getChatManager().sendChatHelp(player);
+                return true;
             case "help":
                 showHelp(player);
                 return true;
