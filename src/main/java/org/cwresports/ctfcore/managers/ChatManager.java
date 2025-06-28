@@ -145,7 +145,7 @@ public class ChatManager {
         // Team prefix
         String teamPrefix = "";
         if (ctfPlayer != null && ctfPlayer.getTeam() != null) {
-            Arena.TeamColor teamColor = ctfPlayer.getTeam().getColor();
+            Arena.TeamColor teamColor = ctfPlayer.getTeam();
             teamPrefix = teamColor.getColorCode() + "● ";
         }
 
