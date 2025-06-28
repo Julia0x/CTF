@@ -852,6 +852,13 @@ public class CTFAdminCommand implements CommandExecutor, TabCompleter {
                         .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
                         .collect(Collectors.toList());
             }
+            
+            if (subcommand.equals("leaderboard")) {
+                return Arrays.asList("create", "delete", "move", "list", "reload", "setsize")
+                        .stream()
+                        .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
+                        .collect(Collectors.toList());
+            }
         }
 
         if (args.length == 3) {
