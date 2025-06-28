@@ -41,7 +41,7 @@ public class CosmeticsGUI {
         gui.setItem(12, createEquippedSlot(player, CosmeticType.DEATH_EFFECT, Material.SKELETON_SKULL, "§8☠ Death Effect"));
         gui.setItem(14, createEquippedSlot(player, CosmeticType.VICTORY_CELEBRATION, Material.FIREWORK_ROCKET, "§e🎉 Victory Dance"));
         gui.setItem(16, createEquippedSlot(player, CosmeticType.TRAIL_EFFECT, Material.FEATHER, "§b✨ Trail"));
-        gui.setItem(28, createEquippedSlot(player, CosmeticType.BANNER, Material.BANNER_PATTERN, "§6🏴 Banner"));
+        gui.setItem(28, createEquippedSlot(player, CosmeticType.BANNER, Material.WHITE_BANNER, "§6🏴 Banner"));
         gui.setItem(30, createEquippedSlot(player, CosmeticType.CHAT_COLOR, Material.NAME_TAG, "§d💬 Chat Color"));
 
         // Browse buttons
