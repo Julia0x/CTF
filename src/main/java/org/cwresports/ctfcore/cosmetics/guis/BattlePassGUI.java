@@ -177,7 +177,7 @@ public class BattlePassGUI {
     }
 
     private ItemStack createSeasonInfo(int season) {
-        ItemStack item = new ItemStack(Material.CALENDAR);
+        ItemStack item = new ItemStack(Material.BOOK);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             meta.setDisplayName("§6🗓 Season " + season);
