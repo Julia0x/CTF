@@ -55,4 +55,32 @@ public class Cosmetic {
     public String getRarity() {
         return rarity;
     }
+
+    public int getPrice() {
+        return cost;
+    }
+
+    public boolean isPurchasable() {
+        return purchasable;
+    }
+
+    public ItemStack createDisplayItem(boolean owned) {
+        Material material = owned ? Material.EMERALD : (cost == 0 ? Material.GRAY_DYE : Material.GOLD_INGOT);
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+        
+        if (meta != null) {
+            meta.setDisplayName("§e" + name);
+            meta.setLore(List.of(
+                "§7" + description,
+                "§7Type: §e" + type.getDisplayName(),
+                "§7Rarity: §e" + rarity,
+                cost > 0 ? "§7Price: §6" + cost + " coins" : "§aFree",
+                owned ? "§a✅ Owned" : "§c❌ Not Owned"
+            ));
+            item.setItemMeta(meta);
+        }
+        
+        return item;
+    }
 }
