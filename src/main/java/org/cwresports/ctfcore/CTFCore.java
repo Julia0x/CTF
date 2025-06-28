@@ -37,6 +37,7 @@ public class CTFCore extends JavaPlugin {
     private AdminToolManager adminToolManager;
     private CurrencyManager currencyManager;
     private TabListManager tabListManager;
+    private HologramLeaderboardManager hologramLeaderboardManager;
 
     // PlaceholderAPI integration
     private boolean placeholderAPIEnabled = false;
