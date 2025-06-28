@@ -316,8 +316,9 @@ public class ScoreboardManager {
         // Arena info
         text = text.replace("{arena}", game.getArena().getName());
 
-        // Time remaining (placeholder - implement based on your game timer)
-        String timeFormat = "10:00"; // Default or calculate from game duration
+        // Time remaining
+        long timeLeft = game.getTimeLeft();
+        String timeFormat = String.format("%02d:%02d", timeLeft / 60, timeLeft % 60);
         text = text.replace("{time_remaining}", timeFormat);
 
         // Player info
