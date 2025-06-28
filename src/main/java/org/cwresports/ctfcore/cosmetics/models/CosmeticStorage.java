@@ -70,4 +70,26 @@ public class CosmeticStorage {
     public Set<String> getOwnedCosmetics(UUID playerId) {
         return playerOwnedCosmetics.getOrDefault(playerId, Collections.emptySet());
     }
+
+    public Map<String, Object> loadPlayerCosmetics(UUID playerId) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("owned", playerOwnedCosmetics.getOrDefault(playerId, Collections.emptySet()));
+        data.put("equipped", playerEquippedCosmetics.getOrDefault(playerId, Collections.emptyMap()));
+        return data;
+    }
+
+    public void savePlayerCosmetics(UUID playerId, Map<String, Object> data) {
+        if (data.containsKey("owned")) {
+            Object owned = data.get("owned");
+            if (owned instanceof Set) {
+                playerOwnedCosmetics.put(playerId, (Set<String>) owned);
+            }
+        }
+        if (data.containsKey("equipped")) {
+            Object equipped = data.get("equipped");
+            if (equipped instanceof Map) {
+                playerEquippedCosmetics.put(playerId, (Map<CosmeticType, String>) equipped);
+            }
+        }
+    }
 }
