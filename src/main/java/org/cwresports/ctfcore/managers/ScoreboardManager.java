@@ -330,7 +330,7 @@ public class ScoreboardManager {
             String teamDisplay = plugin.getConfigManager().getScoreboards().getString(
                     "placeholders.team-display." + ctfPlayer.getTeam().getName(), ctfPlayer.getTeam().getColorCode() + ctfPlayer.getTeam().getName().toUpperCase());
             text = text.replace("{team_display}", teamDisplay);
-            text = text.replace("{your_team_score}", String.valueOf(game.getScore(ctfPlayer.getTeam().getColor())));
+            text = text.replace("{your_team_score}", String.valueOf(game.getScore(ctfPlayer.getTeam())));
         } else {
             text = text.replace("{team_display}", plugin.getConfigManager().getScoreboards().getString(
                     "placeholders.team-display.none", "&7None"));
