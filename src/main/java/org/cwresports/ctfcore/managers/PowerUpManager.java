@@ -143,15 +143,14 @@ public class PowerUpManager {
             player.getWorld().spawnParticle(Particle.FIREWORK, player.getLocation().add(0, 1, 0),
                     30, 1, 1, 1, 0.1);
 
-            // Send message via boss bar instead of chat
+            // Send message via action bar instead of boss bar
             Map<String, String> placeholders = new HashMap<>();
             placeholders.put("powerup", type.getDisplayName());
-            plugin.getMessageManager().updateBossBar(player, "powerup-collected", placeholders, 1.0);
-
-            // Auto-clear boss bar after 3 seconds
-            plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                plugin.getMessageManager().clearBossBar(player);
-            }, 60L);
+            String message = plugin.getConfigManager().getMessage("powerup-collected", placeholders);
+            
+            // Send action bar message
+            player.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR, 
+                new net.md_5.bungee.api.chat.TextComponent("§a§l✓ " + message + " §a§l✓"));
 
             // Remove the power-up
             remove();
