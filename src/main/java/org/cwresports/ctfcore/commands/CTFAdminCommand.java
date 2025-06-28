@@ -697,6 +697,7 @@ public class CTFAdminCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cPlease delete and recreate the leaderboard with the new size."));
 
         return true;
+    }
 
     private boolean handleSetServerLobby(CommandSender sender, String[] args) {
         if (!(sender instanceof Player)) {
