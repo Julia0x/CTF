@@ -270,7 +270,7 @@ public class ScoreboardManager {
     }
 
     /**
-     * Process game lobby placeholders
+     * Process game lobby placeholders (enhanced)
      */
     private String processGameLobbyPlaceholders(Player player, CTFPlayer ctfPlayer, CTFGame game, String text) {
         // Arena info
@@ -281,6 +281,10 @@ public class ScoreboardManager {
         text = text.replace("{current_xp}", String.valueOf(ctfPlayer.getExperience()));
         text = text.replace("{required_xp}", String.valueOf(ctfPlayer.getXPForNextLevel()));
 
+        // Player counts
+        text = text.replace("{current_players}", String.valueOf(game.getPlayers().size()));
+        text = text.replace("{max_players}", String.valueOf(plugin.getConfigManager().getGameplaySetting("max-players-per-arena", 8)));
+
         // Team info
         if (ctfPlayer.getTeam() != null) {
             String teamDisplay = plugin.getConfigManager().getScoreboards().getString(
@@ -288,7 +292,7 @@ public class ScoreboardManager {
             text = text.replace("{team_display}", teamDisplay);
         } else {
             text = text.replace("{team_display}", plugin.getConfigManager().getScoreboards().getString(
-                    "placeholders.team-display.none", "&7Not Assigned"));
+                    "placeholders.team-display.none", "&7None"));
         }
 
         // Team counts
