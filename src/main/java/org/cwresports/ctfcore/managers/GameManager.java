@@ -656,10 +656,26 @@ public class GameManager {
     }
 
     /**
-     * Start respawn countdown for dead player
+     * Start respawn countdown for dead player with spectator mode
      */
     private void startRespawnCountdown(Player player, CTFPlayer ctfPlayer) {
         int respawnDelay = plugin.getConfigManager().getGameplaySetting("respawn-delay-seconds", 3);
+        
+        // Put player in spectator mode immediately
+        player.setGameMode(GameMode.SPECTATOR);
+        
+        // Teleport to spectator point (arena center or lobby spawn)
+        CTFGame game = ctfPlayer.getGame();
+        if (game != null && game.getArena().getLobbySpawn() != null) {
+            Location spectatorPoint = game.getArena().getLobbySpawn().clone();
+            spectatorPoint.add(0, 10, 0); // 10 blocks higher for better view
+            player.teleport(spectatorPoint);
+        }
+        
+        // Clear inventory and effects
+        player.getInventory().clear();
+        player.getActivePotionEffects().forEach(effect ->
+                player.removePotionEffect(effect.getType()));
 
         BukkitTask respawnTask = new BukkitRunnable() {
             int timeLeft = respawnDelay;
@@ -673,8 +689,23 @@ public class GameManager {
                 }
 
                 if (timeLeft <= 0) {
-                    // Respawn player
-                    player.spigot().respawn();
+                    // Set back to survival mode and respawn
+                    player.setGameMode(GameMode.SURVIVAL);
+                    
+                    // Teleport to team spawn
+                    teleportToTeamSpawn(player, ctfPlayer);
+                    
+                    // Apply loadout and effects
+                    applyBasicLoadoutToPlayer(player);
+                    if (ctfPlayer.getTeam() != null) {
+                        applyTeamColoredArmor(player, ctfPlayer.getTeam());
+                        applyTeamKillEnhancements(player, game, ctfPlayer.getTeam());
+                    }
+                    applySpawnProtection(player);
+                    
+                    // Mark as alive and update respawn time
+                    ctfPlayer.respawn();
+                    
                     respawnTasks.remove(player.getUniqueId());
                     cancel();
                     return;
@@ -684,6 +715,10 @@ public class GameManager {
                 Map<String, String> placeholders = new HashMap<>();
                 placeholders.put("time", String.valueOf(timeLeft));
                 player.sendMessage(plugin.getConfigManager().getMessage("respawning", placeholders));
+                
+                // Show action bar countdown
+                player.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR, 
+                    new net.md_5.bungee.api.chat.TextComponent("§c§lRespawning in " + timeLeft + " seconds..."));
 
                 timeLeft--;
             }
