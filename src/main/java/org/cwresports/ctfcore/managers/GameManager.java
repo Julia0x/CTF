@@ -118,10 +118,14 @@ public class GameManager {
         spawnProtection.remove(player.getUniqueId());
         killStreaks.remove(player.getUniqueId());
 
-        // Cancel respawn task if active
+        // Cancel respawn task if active and reset game mode
         BukkitTask respawnTask = respawnTasks.remove(player.getUniqueId());
         if (respawnTask != null) {
             respawnTask.cancel();
+            // Reset game mode if player was in spectator during respawn countdown
+            if (player.getGameMode() == GameMode.SPECTATOR) {
+                player.setGameMode(GameMode.SURVIVAL);
+            }
         }
 
         // Clear inventory and effects
