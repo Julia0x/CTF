@@ -232,7 +232,7 @@ public class ScoreboardManager {
     }
 
     /**
-     * Process lobby-specific placeholders
+     * Process lobby-specific placeholders (enhanced with small symbols)
      */
     private String processLobbyPlaceholders(Player player, CTFPlayer ctfPlayer, String text) {
         // Date
@@ -244,17 +244,27 @@ public class ScoreboardManager {
         text = text.replace("{current_xp}", String.valueOf(ctfPlayer.getExperience()));
         text = text.replace("{required_xp}", String.valueOf(ctfPlayer.getXPForNextLevel()));
 
-        // Progress bar
+        // Small level progress indicator instead of big progress bar
+        text = text.replace("{level_progress}", createLevelProgress(ctfPlayer.getXPProgress()));
         text = text.replace("{progress_bar}", createProgressBar(ctfPlayer.getXPProgress()));
 
         // Currency
         double balance = plugin.getCurrencyManager().getBalance(player);
         text = text.replace("{coins}", String.valueOf((int) balance));
 
-        // Stats
+        // Stats with K/D ratio
         text = text.replace("{total_wins}", String.valueOf(ctfPlayer.getGamesWon()));
         text = text.replace("{total_kills}", String.valueOf(ctfPlayer.getTotalKills()));
         text = text.replace("{total_deaths}", String.valueOf(ctfPlayer.getTotalDeaths()));
+        
+        // Calculate K/D ratio
+        double kdRatio = ctfPlayer.getTotalDeaths() > 0 ? 
+            (double) ctfPlayer.getTotalKills() / ctfPlayer.getTotalDeaths() : 
+            ctfPlayer.getTotalKills();
+        text = text.replace("{kd_ratio}", String.format("%.2f", kdRatio));
+        
+        // Online players count
+        text = text.replace("{online_players}", String.valueOf(Bukkit.getOnlinePlayers().size()));
 
         return processPlaceholders(player, text);
     }
