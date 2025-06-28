@@ -7,7 +7,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.cwresports.ctfcore.CTFCore;
 
 /**
- * Handles chat formatting with level and rank integration
+ * Handles chat formatting with level, rank integration, and arena isolation
  */
 public class ChatListener implements Listener {
 
@@ -25,18 +25,18 @@ public class ChatListener implements Listener {
 
         String message = event.getMessage();
 
-        // Process color codes if player has permission
-        message = plugin.getChatManager().processColors(event.getPlayer(), message);
+        // Always cancel the event first to prevent default chat
+        event.setCancelled(true);
 
-        // Format the chat message
-        String formattedMessage = plugin.getChatManager().formatChatMessage(event.getPlayer(), message);
-
-        if (formattedMessage != null) {
-            // Cancel the original event and send our formatted message
-            event.setCancelled(true);
-
-            // Broadcast the formatted message to all players
-            plugin.getServer().broadcastMessage(formattedMessage);
+        // Handle the message through our chat manager
+        boolean handled = plugin.getChatManager().handleChatMessage(event.getPlayer(), message);
+        
+        if (!handled) {
+            // Fallback to original formatting if not handled
+            String formattedMessage = plugin.getChatManager().formatChatMessage(event.getPlayer(), message);
+            if (formattedMessage != null) {
+                plugin.getServer().broadcastMessage(formattedMessage);
+            }
         }
     }
 }
