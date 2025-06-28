@@ -375,22 +375,6 @@ public class CTFCore extends JavaPlugin {
         return tabListManager;
     }
 
-    public org.cwresports.ctfcore.cosmetics.managers.CosmeticsManager getCosmeticsManager() {
-        return cosmeticsManager;
-    }
-
-    public org.cwresports.ctfcore.cosmetics.managers.AchievementManager getAchievementManager() {
-        return achievementManager;
-    }
-
-    public org.cwresports.ctfcore.cosmetics.managers.BattlePassManager getBattlePassManager() {
-        return battlePassManager;
-    }
-
-    public org.cwresports.ctfcore.cosmetics.managers.ShopManager getShopManager() {
-        return shopManager;
-    }
-
     public boolean isPlaceholderAPIEnabled() {
         return placeholderAPIEnabled;
     }
