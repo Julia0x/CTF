@@ -1,124 +1,148 @@
-# CTF-Core Scoreboards Configuration
+# CTF-Core Scoreboards Configuration - BedWars1058 Style
 # Complete customization for all scoreboard types
 # Supports color codes (&) and placeholders
 
 # Global scoreboard settings
 global:
   enabled: true
-  update-interval-ticks: 60  # How often to update scoreboards (3 seconds)
+  update-interval-ticks: 20  # Update every second for smooth animation
 
-# Server lobby scoreboard (for players not in games)
+# Server lobby scoreboard (BedWars1058 style - compact and clean)
 lobby:
   enabled: true
-  title: "&6&lCapture The Flag"
+  title: "&6&lCTF &7&l| &f&lLobby"
 
-  # Lines displayed on scoreboard (top to bottom)
+  # Compact lines (BedWars1058 style)
   lines:
-    15: "&7{date}"  # Current date
-    14: ""
-    13: "&fLevel: &a[{level}✫]"
-    12: "&fProgress: {progress_bar}"
-    9: "  "
-    8: "&fCoins: &6{coins}"
-    7: "   "
-    6: "&fTotal Wins: &a{total_wins}"
-    5: "&fTotal Kills: &a{total_kills}"
-    4: "    "
-    3: "&mc.cwresports.lk"
+    12: "&7{date}"
+    11: ""
+    10: "&fLevel &a{level} &7{level_progress}"
+    9: "&fCoins: &6{coins}"
+    8: ""
+    7: "&fWins: &a{total_wins}"
+    6: "&fKills: &a{total_kills}"
+    5: "&fK/D: &e{kd_ratio}"
+    4: ""
+    3: "&ecwresports.lk"
+    2: ""
+    1: "&aPlaying: &f{online_players}"
 
-# Game lobby scoreboard (waiting for game to start)
+# Game lobby scoreboard (waiting for game to start - compact)
 game-lobby:
   enabled: true
-  title: "&6&l*** WAITING ***"
+  title: "&6&lCTF &7&l| &a&lWaiting"
 
   lines:
-    15: "&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
-    14: "&eArena: &f{arena}"
-    10: " "
-    9: "&eYour Team: {team_display}"
-    8: "  "
-    7: "&c&lRED: &f{red_count}/{max_per_team}"
-    6: "&9&lBLUE: &f{blue_count}/{max_per_team}"
-    5: "   "
-    1: "&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+    11: "&7{date}"
+    10: ""
+    9: "&fMap: &a{arena}"
+    8: "&fPlayers: &a{current_players}&7/&a{max_players}"
+    7: ""
+    6: "&fTeam: {team_display}"
+    5: ""
+    4: "&c● &fRed: &c{red_count}&7/&c{max_per_team}"
+    3: "&9● &fBlue: &9{blue_count}&7/&9{max_per_team}"
+    2: ""
+    1: "&ecwresports.lk"
 
-# Active game scoreboard (during gameplay)
+# Active game scoreboard (during gameplay - compact and informative)
 game-playing:
   enabled: true
-  title: "&e&lCAPTURE THE FLAG"
+  title: "&6&lCTF &7&l| &c&lPlaying"
 
   lines:
-    15: "&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
-    14: "&eArena: &f{arena}"
-    10: " "
-    9: "&eYour Team: {team_display}"
-    8: "  "
-    7: "&c&lRED: &f{red_score}/{flags_to_win}"
-    6: "&9&lBLUE: &f{blue_score}/{flags_to_win}"
-    5: "   "
-    1: "&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+    13: "&7{time_remaining}"
+    12: ""
+    11: "&fMap: &a{arena}"
+    10: ""
+    9: "&fYour Team: {team_display}"
+    8: "&fScore: &e{your_team_score}&7/&e{flags_to_win}"
+    7: ""
+    6: "&fFlags:"
+    5: "&c● &fRed: &c{red_score}&7/&c{flags_to_win}"
+    4: "&9● &fBlue: &9{blue_score}&7/&9{flags_to_win}"
+    3: ""
+    2: "&fK/D: &a{session_kills}&7/&c{session_deaths}"
+    1: "&ecwresports.lk"
 
-# Admin setup scoreboard (for arena configuration)
+# Admin setup scoreboard (compact dashboard style)
 admin:
   enabled: true
-  title: "&e&lArena: {arena}"
+  title: "&e&lSetup &7&l| &f{arena}"
 
   lines:
-    15: "&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
-    14: "&eArena: &f{arena}"
-    13: "&eStatus: {game_status}"
-    12: "&ePlayers: &f{player_count}"
-    11: ""
-    10: "&eLobby: {lobby_status}"
-    9: " "
-    8: "&c&lRED TEAM:"
-    7: "  Players: &f{red_players}"
-    6: "  Score: &f{red_score}"
-    5: "  Spawns: {red_spawns_status}"
-    4: "  Flag: {red_flag_status}"
-    3: "  Capture: {red_capture_status}"
-    2: "  "
-    1: "&9&lBLUE TEAM:"
-    0: "  Players: &f{blue_players}"
-    -1: "  Score: &f{blue_score}"
-    -2: "  Spawns: {blue_spawns_status}"
-    -3: "  Flag: {blue_flag_status}"
-    -4: "  Capture: {blue_capture_status}"
-    -5: "   "
-    -6: "&eReady: {ready_status}"
-    -7: "&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+    14: "&8Arena: &f{arena}"
+    13: "&8Status: {game_status}"
+    12: ""
+    11: "&fLobby: {lobby_status}"
+    10: ""
+    9: "&c● &fRed Team:"
+    8: "  &7Spawns: {red_spawns_status}"
+    7: "  &7Flag: {red_flag_status}"
+    6: "  &7Capture: {red_capture_status}"
+    5: ""
+    4: "&9● &fBlue Team:"
+    3: "  &7Spawns: {blue_spawns_status}"
+    2: "  &7Flag: {blue_flag_status}"
+    1: "  &7Capture: {blue_capture_status}"
+    0: ""
+    -1: "&aReady: {ready_status}"
 
 # Placeholder formats
 placeholders:
-  # Team display formats
+  # Team display formats (shorter)
   team-display:
-    red: "&c&lRED"
-    blue: "&9&lBLUE"
-    none: "&7Not Assigned"
+    red: "&c&lRed"
+    blue: "&9&lBlue" 
+    none: "&7None"
 
-  # Status formats
+  # Status formats (minimal symbols)
   status:
     complete: "&a✓"
     incomplete: "&c✗"
-    enabled: "&aEnabled"
-    disabled: "&cDisabled"
-    configured: "&aConfigured"
-    not-set: "&cNot Set"
+    enabled: "&aON"
+    disabled: "&cOFF"
+    configured: "&a✓"
+    not-set: "&c✗"
 
-  # Game state formats
+  # Game state formats (shorter)
   game-state:
-    waiting: "&7Waiting"
-    starting: "&aStarting"
-    playing: "&cPlaying"
-    ending: "&7Ending"
+    waiting: "&7Wait"
+    starting: "&aStart"
+    playing: "&cLive"
+    ending: "&7End"
 
-  # Progress bar settings
+  # Small progress bar settings (dots instead of blocks)
   progress-bar:
-    length: 10
-    filled-char: "█"
-    empty-char: "█"
+    length: 8
+    filled-char: "●"
+    empty-char: "○"
     filled-color: "&a"
     empty-color: "&7"
 
+  # Level progress using small symbols
+  level-progress:
+    style: "dots"  # dots, bars, or stars
+    length: 5
+    filled: "&a●"
+    empty: "&8●"
+
   # Date format
   date-format: "MM/dd/yy"
+
+# Chat isolation settings
+chat:
+  enabled: true
+  arena-isolation: true  # Only arena players see each other's chat
+  global-chat-command: "!"  # Use ! prefix for global chat
+  team-chat-command: "@"  # Use @ prefix for team chat
+  format: "&7[{level}] {team_prefix}{player}: &f{message}"
+
+# Tab list settings  
+tablist:
+  enabled: true
+  arena-isolation: true  # Only show arena players in tab list
+  update-interval-ticks: 20
+  header: "&6&lCTF Server\n&7Welcome {player}!"
+  footer: "\n&ecwresports.lk"
+  format: "{team_prefix}{level_prefix}&f{player}"
