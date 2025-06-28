@@ -126,7 +126,7 @@ public class ChatManager {
         }
 
         String template = plugin.getConfigManager().getScoreboards().getString("chat.format",
-                "&7[{level}] {team_prefix}{player}: &f{message}");
+                "&7[{level}] {luckperms_prefix}{team_prefix}{player}{luckperms_suffix}: &f{message}");
         String formatted = formatMessage(player, message, template);
 
         // Send to recipients
