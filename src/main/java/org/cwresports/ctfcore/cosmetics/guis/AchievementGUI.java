@@ -45,7 +45,7 @@ public class AchievementGUI {
         gui.setItem(19, createCategoryButton(Material.DIAMOND_SWORD, "§c⚔ Combat", Achievement.AchievementCategory.COMBAT));
         gui.setItem(21, createCategoryButton(Material.CYAN_BANNER, "§9🏴 Flags", Achievement.AchievementCategory.FLAGS));
         gui.setItem(23, createCategoryButton(Material.PLAYER_HEAD, "§e🤝 Teamwork", Achievement.AchievementCategory.TEAMWORK));
-        gui.setItem(25, createCategoryButton(Material.GAME_CLOCK, "§7⏰ Games", Achievement.AchievementCategory.GAMES));
+        gui.setItem(25, createCategoryButton(Material.CLOCK, "§7⏰ Games", Achievement.AchievementCategory.GAMES));
         gui.setItem(37, createCategoryButton(Material.NETHER_STAR, "§d⭐ Special", Achievement.AchievementCategory.SPECIAL));
         gui.setItem(39, createCategoryButton(Material.GOLDEN_APPLE, "§6👑 Prestige", Achievement.AchievementCategory.PRESTIGE));
         gui.setItem(41, createCategoryButton(Material.CLOCK, "§b🗓 Seasonal", Achievement.AchievementCategory.SEASONAL));
