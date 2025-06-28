@@ -237,6 +237,8 @@ public class CTFCore extends JavaPlugin {
         // Initialize cosmetics managers
         cosmeticsManager = new org.cwresports.ctfcore.cosmetics.managers.CosmeticsManager(this);
         achievementManager = new org.cwresports.ctfcore.cosmetics.managers.AchievementManager(this);
+        battlePassManager = new org.cwresports.ctfcore.cosmetics.managers.BattlePassManager(this);
+        shopManager = new org.cwresports.ctfcore.cosmetics.managers.ShopManager(this);
 
         // Load data that depends on config
         arenaManager.loadArenas();
