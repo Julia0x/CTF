@@ -76,4 +76,26 @@ public class Achievement {
     public List<String> getRewards() {
         return rewards;
     }
+
+    public boolean isHidden() {
+        return hidden;
+    }
+
+    public ItemStack createDisplayItem(int progress, boolean unlocked) {
+        Material material = unlocked ? Material.EMERALD : Material.GRAY_DYE;
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+        
+        if (meta != null) {
+            meta.setDisplayName("§e" + name);
+            meta.setLore(List.of(
+                "§7" + description,
+                "§7Progress: §e" + progress + "/" + maxProgress,
+                unlocked ? "§a✅ Unlocked" : "§c❌ Locked"
+            ));
+            item.setItemMeta(meta);
+        }
+        
+        return item;
+    }
 }
