@@ -10,6 +10,7 @@ depend:
 softdepend:
   - PlaceholderAPI
   - Vault
+  - DecentHolograms
 
 commands:
   ctfadmin:
