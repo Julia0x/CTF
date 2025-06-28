@@ -266,6 +266,20 @@ public class ScoreboardManager {
         // Online players count
         text = text.replace("{online_players}", String.valueOf(Bukkit.getOnlinePlayers().size()));
 
+        // Flag carrying status (even in lobby, for consistency)
+        if (ctfPlayer.hasFlag()) {
+            Arena.TeamColor flagTeam = ctfPlayer.getCarryingFlag().getTeam();
+            String flagDisplay = plugin.getConfigManager().getScoreboards().getString(
+                "placeholders.carrying-flag." + flagTeam.getName(), 
+                flagTeam.getColorCode() + "🚩 " + flagTeam.getName().toUpperCase() + " FLAG");
+            text = text.replace("{carrying_flag}", flagDisplay);
+            text = text.replace("{has_flag}", "true");
+        } else {
+            text = text.replace("{carrying_flag}", plugin.getConfigManager().getScoreboards().getString(
+                "placeholders.carrying-flag.none", ""));
+            text = text.replace("{has_flag}", "false");
+        }
+
         return processPlaceholders(player, text);
     }
 
