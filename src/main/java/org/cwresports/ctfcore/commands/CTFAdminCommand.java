@@ -68,6 +68,8 @@ public class CTFAdminCommand implements CommandExecutor, TabCompleter {
                 return handleSetServerLobby(sender, args);
             case "forcestart":
                 return handleForceStart(sender, args);
+            case "leaderboard":
+                return handleLeaderboard(sender, args);
             case "help":
                 showHelp(sender);
                 return true;
