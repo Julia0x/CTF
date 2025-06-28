@@ -16,14 +16,20 @@ public class Cosmetic {
     private final CosmeticType type;
     private final int cost;
     private final String rarity;
+    private final boolean purchasable;
 
     public Cosmetic(String id, String name, String description, CosmeticType type, int cost, String rarity) {
+        this(id, name, description, type, cost, rarity, true);
+    }
+
+    public Cosmetic(String id, String name, String description, CosmeticType type, int cost, String rarity, boolean purchasable) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.type = type;
         this.cost = cost;
         this.rarity = rarity;
+        this.purchasable = purchasable;
     }
 
     public String getId() {
