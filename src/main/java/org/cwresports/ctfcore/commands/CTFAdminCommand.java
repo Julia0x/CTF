@@ -518,6 +518,185 @@ public class CTFAdminCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
+    private boolean handleLeaderboard(CommandSender sender, String[] args) {
+        if (args.length < 2) {
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cUsage: /ctfadmin leaderboard <create|delete|move|list|reload|setsize>"));
+            return true;
+        }
+
+        String action = args[1].toLowerCase();
+
+        switch (action) {
+            case "create":
+                return handleLeaderboardCreate(sender, args);
+            case "delete":
+                return handleLeaderboardDelete(sender, args);
+            case "move":
+                return handleLeaderboardMove(sender, args);
+            case "list":
+                return handleLeaderboardList(sender, args);
+            case "reload":
+                return handleLeaderboardReload(sender, args);
+            case "setsize":
+                return handleLeaderboardSetSize(sender, args);
+            default:
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cUnknown leaderboard action: " + action));
+                return true;
+        }
+    }
+
+    private boolean handleLeaderboardCreate(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(plugin.getConfigManager().getMessage("player-only"));
+            return true;
+        }
+
+        if (args.length < 3) {
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cUsage: /ctfadmin leaderboard create <type> [size]"));
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cTypes: kills, captures, level, games_won"));
+            return true;
+        }
+
+        if (!plugin.getHologramLeaderboardManager().isDecentHologramsEnabled()) {
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cDecentHolograms plugin not found! Hologram leaderboards are disabled."));
+            return true;
+        }
+
+        Player player = (Player) sender;
+        String typeStr = args[2].toLowerCase();
+        int size = 5; // default size
+
+        if (args.length > 3) {
+            try {
+                size = Integer.parseInt(args[3]);
+                if (size < 1 || size > 15) {
+                    sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cSize must be between 1 and 15!"));
+                    return true;
+                }
+            } catch (NumberFormatException e) {
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cInvalid size number!"));
+                return true;
+            }
+        }
+
+        LeaderboardType type = LeaderboardType.fromString(typeStr);
+        if (type == null) {
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cInvalid leaderboard type: " + typeStr));
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cValid types: kills, captures, level, games_won"));
+            return true;
+        }
+
+        // Generate unique ID
+        String id = type.toString().toLowerCase() + "_" + System.currentTimeMillis();
+
+        if (plugin.getHologramLeaderboardManager().createLeaderboard(id, type, player.getLocation(), size)) {
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&aCreated " + type.getDisplayName() + " leaderboard (ID: " + id + ") with size " + size + "!"));
+        } else {
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cFailed to create leaderboard!"));
+        }
+
+        return true;
+    }
+
+    private boolean handleLeaderboardDelete(CommandSender sender, String[] args) {
+        if (args.length < 3) {
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cUsage: /ctfadmin leaderboard delete <id>"));
+            return true;
+        }
+
+        String id = args[2];
+
+        if (plugin.getHologramLeaderboardManager().deleteLeaderboard(id)) {
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&aDeleted leaderboard: " + id));
+        } else {
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cLeaderboard with ID '" + id + "' not found!"));
+        }
+
+        return true;
+    }
+
+    private boolean handleLeaderboardMove(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(plugin.getConfigManager().getMessage("player-only"));
+            return true;
+        }
+
+        if (args.length < 3) {
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cUsage: /ctfadmin leaderboard move <id>"));
+            return true;
+        }
+
+        Player player = (Player) sender;
+        String id = args[2];
+
+        if (plugin.getHologramLeaderboardManager().moveLeaderboard(id, player.getLocation())) {
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&aMoved leaderboard '" + id + "' to your location!"));
+        } else {
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cLeaderboard with ID '" + id + "' not found!"));
+        }
+
+        return true;
+    }
+
+    private boolean handleLeaderboardList(CommandSender sender, String[] args) {
+        var leaderboards = plugin.getHologramLeaderboardManager().getAllLeaderboards();
+
+        if (leaderboards.isEmpty()) {
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&eNo leaderboards found."));
+            return true;
+        }
+
+        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&e&l=== Hologram Leaderboards ==="));
+        for (var leaderboard : leaderboards) {
+            String status = leaderboard.isEnabled() ? "&aEnabled" : "&cDisabled";
+            String active = leaderboard.isActive() ? "&a✔" : "&c✖";
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', 
+                "&e" + leaderboard.getId() + " &7(" + leaderboard.getType().getDisplayName() + 
+                ", Size: " + leaderboard.getSize() + ") - " + status + " " + active));
+        }
+
+        return true;
+    }
+
+    private boolean handleLeaderboardReload(CommandSender sender, String[] args) {
+        plugin.getHologramLeaderboardManager().updateAllLeaderboards();
+        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&aReloaded all leaderboards!"));
+        return true;
+    }
+
+    private boolean handleLeaderboardSetSize(CommandSender sender, String[] args) {
+        if (args.length < 4) {
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cUsage: /ctfadmin leaderboard setsize <id> <size>"));
+            return true;
+        }
+
+        String id = args[2];
+        int size;
+
+        try {
+            size = Integer.parseInt(args[3]);
+            if (size < 1 || size > 15) {
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cSize must be between 1 and 15!"));
+                return true;
+            }
+        } catch (NumberFormatException e) {
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cInvalid size number!"));
+            return true;
+        }
+
+        var leaderboard = plugin.getHologramLeaderboardManager().getLeaderboard(id);
+        if (leaderboard == null) {
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cLeaderboard with ID '" + id + "' not found!"));
+            return true;
+        }
+
+        // Note: This would require modifying HologramLeaderboard to allow size changes
+        // For now, suggest recreating the leaderboard
+        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cChanging leaderboard size is not yet supported."));
+        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cPlease delete and recreate the leaderboard with the new size."));
+
+        return true;
+
     private boolean handleSetServerLobby(CommandSender sender, String[] args) {
         if (!(sender instanceof Player)) {
             sender.sendMessage(plugin.getConfigManager().getMessage("player-only"));
