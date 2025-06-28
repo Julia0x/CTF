@@ -386,6 +386,10 @@ public class CTFCore extends JavaPlugin {
         return tabListManager;
     }
 
+    public HologramLeaderboardManager getHologramLeaderboardManager() {
+        return hologramLeaderboardManager;
+    }
+
     public boolean isPlaceholderAPIEnabled() {
         return placeholderAPIEnabled;
     }
