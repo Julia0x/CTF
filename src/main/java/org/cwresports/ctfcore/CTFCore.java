@@ -270,6 +270,7 @@ public class CTFCore extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerRespawnListener(this), this);
         getServer().getPluginManager().registerEvents(new InventoryClickListener(this), this);
         getServer().getPluginManager().registerEvents(new ChatListener(this), this);
+        getServer().getPluginManager().registerEvents(new org.cwresports.ctfcore.cosmetics.listeners.CosmeticsListener(this), this);
 
         getLogger().info("Event listeners registered successfully.");
     }
