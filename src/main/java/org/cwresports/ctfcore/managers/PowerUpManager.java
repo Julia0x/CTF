@@ -262,19 +262,17 @@ public class PowerUpManager {
         PowerUp powerUp = new PowerUp(randomType, spawnLoc, plugin);
         powerUps.add(powerUp);
 
-        // Announce to all players via boss bar instead of chat
+        // Announce to all players via action bar instead of boss bar
         Map<String, String> placeholders = new HashMap<>();
         placeholders.put("powerup", randomType.getDisplayName());
+        String message = plugin.getConfigManager().getMessage("powerup-spawned", placeholders);
         
         for (org.cwresports.ctfcore.models.CTFPlayer ctfPlayer : game.getPlayers()) {
             Player player = ctfPlayer.getPlayer();
             if (player != null && player.isOnline()) {
-                plugin.getMessageManager().updateBossBar(player, "powerup-spawned", placeholders, 1.0);
-                
-                // Auto-clear boss bar after 5 seconds
-                plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                    plugin.getMessageManager().clearBossBar(player);
-                }, 100L);
+                // Send action bar message
+                player.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR, 
+                    new net.md_5.bungee.api.chat.TextComponent("§e§l⚡ " + message + " §e§l⚡"));
             }
         }
 
