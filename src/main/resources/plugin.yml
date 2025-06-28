@@ -26,7 +26,12 @@ commands:
   cosmetics:
     description: Open the cosmetics menu
     usage: /cosmetics
-    aliases: [cosm, battlepass, bp]
+    aliases: [cosm]
+
+  battlepass:
+    description: Open the battle pass menu
+    usage: /battlepass
+    aliases: [bp]
 
 permissions:
   ctf.admin:
