@@ -22,6 +22,56 @@ public class ParticleEffect {
     }
 
     /**
+     * Play victory celebration effect
+     */
+    public void playVictoryCelebration(Player player, String effectType) {
+        if (player != null && player.isOnline()) {
+            spawnVictoryParticles(player);
+        }
+    }
+
+    /**
+     * Play death effect
+     */
+    public void playDeathEffect(Player player, String effectType) {
+        if (player != null && player.getLocation() != null) {
+            spawnDeathParticles(player.getLocation());
+        }
+    }
+
+    /**
+     * Play kill effect
+     */
+    public void playKillEffect(Player killer, Player victim, String effectType) {
+        if (killer != null && killer.isOnline()) {
+            spawnCriticalParticles(killer.getLocation().add(0, 1, 0), 10);
+        }
+        if (victim != null && victim.getLocation() != null) {
+            spawnDeathParticles(victim.getLocation());
+        }
+    }
+
+    /**
+     * Play flag carrier effect
+     */
+    public void playFlagCarrierEffect(Player player, String effectType) {
+        if (player != null && player.isOnline()) {
+            Location location = player.getLocation().add(0, 2.5, 0);
+            spawnColoredDustParticles(location, 5, org.bukkit.Color.YELLOW);
+        }
+    }
+
+    /**
+     * Start trail effect for player
+     */
+    public void startTrailEffect(Player player, String effectType) {
+        if (player != null && player.isOnline()) {
+            Location location = player.getLocation();
+            spawnColoredDustParticles(location, 3, org.bukkit.Color.WHITE);
+        }
+    }
+
+    /**
      * Spawn critical hit particles (using CRIT instead of deprecated CRIT_MAGIC)
      */
     public static void spawnCriticalParticles(Location location, int count) {
