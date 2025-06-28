@@ -322,13 +322,7 @@ public class GameManager {
 
             ctfPlayer.setTeam(assignedTeam);
 
-            // Send team assignment message
-            if (ctfPlayer.getPlayer() != null && ctfPlayer.getPlayer().isOnline()) {
-                Map<String, String> placeholders = new HashMap<>();
-                placeholders.put("team_color", assignedTeam.getColorCode());
-                placeholders.put("team_name", assignedTeam.getName().toUpperCase());
-                ctfPlayer.getPlayer().sendMessage(plugin.getConfigManager().getMessage("assigned-to-team", placeholders));
-            }
+            // Team assignment message removed as requested
         }
     }
 
