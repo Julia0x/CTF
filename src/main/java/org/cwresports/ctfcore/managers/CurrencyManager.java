@@ -55,6 +55,12 @@ public class CurrencyManager {
         }
         return economy.getBalance(player);
     }
+    /**
+     * Get player's coins (alias for getBalance)
+     */
+    public int getCoins(Player player) {
+        return (int) getBalance(player);
+    }
 
     /**
      * Add coins to player's account
