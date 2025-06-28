@@ -837,7 +837,7 @@ public class CTFAdminCommand implements CommandExecutor, TabCompleter {
 
         if (args.length == 1) {
             return Arrays.asList("create", "setup", "delete", "setlobby", "setspawn", "setflag",
-                            "setcapture", "status", "save", "list", "reload", "setserverlobby", "forcestart", "help")
+                            "setcapture", "status", "save", "list", "reload", "setserverlobby", "forcestart", "leaderboard", "help")
                     .stream()
                     .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
                     .collect(Collectors.toList());
