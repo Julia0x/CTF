@@ -9,10 +9,13 @@ public class Achievement {
     
     public enum AchievementCategory {
         KILLS("Combat"),
+        COMBAT("Combat"),
         FLAGS("Flag Objectives"),
+        TEAMWORK("Teamwork"),
         GAMES("Games Played"),
         SPECIAL("Special"),
-        SEASONAL("Seasonal");
+        SEASONAL("Seasonal"),
+        PRESTIGE("Prestige");
 
         private final String displayName;
 
