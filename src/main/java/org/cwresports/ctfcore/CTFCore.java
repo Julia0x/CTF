@@ -167,6 +167,15 @@ public class CTFCore extends JavaPlugin {
             }
         }
 
+        // ENHANCED: Shutdown hologram leaderboard manager
+        if (hologramLeaderboardManager != null) {
+            try {
+                hologramLeaderboardManager.cleanup();
+            } catch (Exception e) {
+                getLogger().warning("Could not shutdown hologram leaderboard manager: " + e.getMessage());
+            }
+        }
+
         // ENHANCED: Clear all player data to prevent memory leaks
         try {
             getLogger().info("Cleaning up player data...");
