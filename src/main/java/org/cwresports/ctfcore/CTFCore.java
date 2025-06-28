@@ -252,6 +252,7 @@ public class CTFCore extends JavaPlugin {
     private void registerCommands() {
         getCommand("ctfadmin").setExecutor(new CTFAdminCommand(this));
         getCommand("ctf").setExecutor(new CTFPlayerCommand(this));
+        getCommand("cosmetics").setExecutor(new org.cwresports.ctfcore.cosmetics.commands.CosmeticsCommand(this));
 
         getLogger().info("Commands registered successfully.");
     }
