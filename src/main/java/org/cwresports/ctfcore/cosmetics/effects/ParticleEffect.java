@@ -4,12 +4,22 @@ import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.cwresports.ctfcore.CTFCore;
 
 /**
  * Handles particle effects for CTF cosmetics
  * Updated for Paper 1.21+ with modern particle names
  */
 public class ParticleEffect {
+
+    private final CTFCore plugin;
+
+    /**
+     * Constructor that takes CTFCore instance
+     */
+    public ParticleEffect(CTFCore plugin) {
+        this.plugin = plugin;
+    }
 
     /**
      * Spawn critical hit particles (using CRIT instead of deprecated CRIT_MAGIC)
