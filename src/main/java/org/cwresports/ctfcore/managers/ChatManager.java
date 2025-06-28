@@ -93,7 +93,7 @@ public class ChatManager {
 
         // Send to team members only
         CTFGame game = ctfPlayer.getGame();
-        for (CTFPlayer teamPlayer : game.getPlayersOnTeam(ctfPlayer.getTeam().getColor())) {
+        for (CTFPlayer teamPlayer : game.getPlayersOnTeam(ctfPlayer.getTeam())) {
             if (teamPlayer.getPlayer() != null && teamPlayer.getPlayer().isOnline()) {
                 teamPlayer.getPlayer().sendMessage(formatted);
             }
