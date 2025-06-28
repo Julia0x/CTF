@@ -34,5 +34,8 @@ public class PlayerQuitListener implements Listener {
         // Clear scoreboard and admin arena viewing
         plugin.getScoreboardManager().clearPlayerScoreboard(event.getPlayer());
         plugin.getScoreboardManager().removeAdminViewingArena(event.getPlayer());
+        
+        // Update tab list for remaining players
+        plugin.getTabListManager().onPlayerQuit(event.getPlayer());
     }
 }
