@@ -26,5 +26,8 @@ public class PlayerJoinListener implements Listener {
         
         // Update scoreboard for new player
         plugin.getScoreboardManager().updatePlayerScoreboard(event.getPlayer());
+        
+        // Update tab list for new player and others
+        plugin.getTabListManager().onPlayerJoin(event.getPlayer());
     }
 }
