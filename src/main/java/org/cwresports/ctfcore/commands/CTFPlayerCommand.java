@@ -102,9 +102,7 @@ public class CTFPlayerCommand implements CommandExecutor, TabCompleter {
         boolean success = plugin.getGameManager().addPlayerToGame(player, arena);
 
         if (success) {
-            Map<String, String> placeholders = new HashMap<>();
-            placeholders.put("arena", arenaName);
-            player.sendMessage(plugin.getConfigManager().getMessage("joined-game", placeholders));
+            // Join message removed as requested
         } else {
             Map<String, String> placeholders = new HashMap<>();
             placeholders.put("arena", arenaName);
