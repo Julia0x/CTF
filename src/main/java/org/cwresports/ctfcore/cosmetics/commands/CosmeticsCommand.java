@@ -5,24 +5,22 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.cwresports.ctfcore.CTFCore;
-import org.cwresports.ctfcore.cosmetics.managers.AchievementManager;
-import org.cwresports.ctfcore.cosmetics.managers.CosmeticsManager;
-
-import java.util.*;
+import org.cwresports.ctfcore.cosmetics.guis.BattlePassGUI;
+import org.cwresports.ctfcore.cosmetics.guis.CosmeticsGUI;
 
 /**
- * Handles cosmetic-related commands
+ * Simple command handler for cosmetics and battle pass
  */
 public class CosmeticsCommand implements CommandExecutor {
 
     private final CTFCore plugin;
-    private final CosmeticsManager cosmeticsManager;
-    private final AchievementManager achievementManager;
+    private final CosmeticsGUI cosmeticsGUI;
+    private final BattlePassGUI battlePassGUI;
 
     public CosmeticsCommand(CTFCore plugin) {
         this.plugin = plugin;
-        this.cosmeticsManager = plugin.getCosmeticsManager();
-        this.achievementManager = plugin.getAchievementManager();
+        this.cosmeticsGUI = new CosmeticsGUI(plugin);
+        this.battlePassGUI = new BattlePassGUI(plugin);
     }
 
     @Override
@@ -34,69 +32,14 @@ public class CosmeticsCommand implements CommandExecutor {
 
         Player player = (Player) sender;
 
-        if (args.length == 0) {
-            // Open cosmetics GUI
-            player.sendMessage("§eOpening cosmetics menu...");
+        // Check if it's a battle pass command
+        if (label.equalsIgnoreCase("battlepass") || label.equalsIgnoreCase("bp")) {
+            battlePassGUI.openBattlePass(player);
             return true;
         }
 
-        String subcommand = args[0].toLowerCase();
-
-        switch (subcommand) {
-            case "give":
-                return handleGive(player, args);
-            case "stats":
-                return handleStats(player, args);
-            case "list":
-                return handleList(player, args);
-            default:
-                player.sendMessage("§cUnknown cosmetics command!");
-                return true;
-        }
-    }
-
-    private boolean handleGive(Player player, String[] args) {
-        if (args.length < 2) {
-            player.sendMessage("§cUsage: /cosmetics give <cosmetic>");
-            return true;
-        }
-
-        String cosmeticId = args[1];
-        boolean success = cosmeticsManager.giveCosmetic(player, cosmeticId);
-
-        if (success) {
-            player.sendMessage("§aSuccessfully given cosmetic: " + cosmeticId);
-        } else {
-            player.sendMessage("§cFailed to give cosmetic: " + cosmeticId);
-        }
-
-        return true;
-    }
-
-    private boolean handleStats(Player player, String[] args) {
-        Set<String> ownedCosmetics = cosmeticsManager.getOwnedCosmetics(player);
-        Collection<?> allCosmetics = cosmeticsManager.getAllCosmetics();
-        double completionPercentage = achievementManager.getCompletionPercentage(player);
-        Set<String> unlockedAchievements = achievementManager.getUnlockedAchievements(player);
-        Collection<?> allAchievements = achievementManager.getAllAchievements();
-
-        player.sendMessage("§e=== Cosmetics Stats ===");
-        player.sendMessage("§7Cosmetics: §e" + ownedCosmetics.size() + "/" + allCosmetics.size());
-        player.sendMessage("§7Achievement Progress: §e" + String.format("%.1f", completionPercentage) + "%");
-        player.sendMessage("§7Achievements: §e" + unlockedAchievements.size() + "/" + allAchievements.size());
-
-        return true;
-    }
-
-    private boolean handleList(Player player, String[] args) {
-        player.sendMessage("§e=== Available Cosmetics ===");
-        
-        cosmeticsManager.getAllCosmetics().forEach(cosmetic -> {
-            boolean owned = cosmeticsManager.ownsCosmetic(player, cosmetic.getId());
-            String status = owned ? "§a✅" : "§c❌";
-            player.sendMessage(status + " §e" + cosmetic.getName() + " §7(" + cosmetic.getType().getDisplayName() + ")");
-        });
-
+        // Default: open cosmetics menu
+        cosmeticsGUI.openCosmeticsMenu(player);
         return true;
     }
 }
