@@ -52,26 +52,6 @@ public class LobbyManager {
     }
     
     /**
-     * Give game end items to a player
-     */
-    public void giveGameEndItems(Player player) {
-        player.getInventory().clear();
-        
-        // Leave item for game end
-        ItemStack leaveItem = new ItemStack(Material.RED_BED);
-        ItemMeta leaveMeta = leaveItem.getItemMeta();
-        leaveMeta.setDisplayName("§c§lLeave to Lobby");
-        leaveMeta.setLore(Arrays.asList(
-            "§7Right-click to return to server lobby",
-            "§eOr wait for automatic teleport"
-        ));
-        leaveItem.setItemMeta(leaveMeta);
-        
-        player.getInventory().setItem(LEAVE_SLOT, leaveItem);
-        player.updateInventory();
-    }
-    
-    /**
      * Handle hotbar item interaction - removed team selection
      */
     public boolean handleHotbarClick(Player player, ItemStack item) {
