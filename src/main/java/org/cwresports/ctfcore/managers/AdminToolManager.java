@@ -200,59 +200,54 @@ public class AdminToolManager {
     }
 
     /**
-     * Open modern arena dashboard - COMPLETELY REDESIGNED with FIXED team colors
+     * Open modern arena dashboard - COMPLETELY REDESIGNED with FIXED team colors (BedWars1058 style)
      */
     private void openArenaDashboard(Player player, Arena arena) {
-        String title = "Arena Dashboard";
-        Inventory gui = Bukkit.createInventory(null, 54, title);
+        String title = "§7Arena: §e" + arena.getName();
+        Inventory gui = Bukkit.createInventory(null, 45, title); // Smaller 45-slot GUI
         openGUITitles.put(player.getUniqueId(), title);
 
         Map<String, Object> status = arena.getConfigurationStatus();
 
-        // Header decoration
+        // Header decoration (reduced)
         ItemStack headerItem = new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE);
         ItemMeta headerMeta = headerItem.getItemMeta();
-        headerMeta.setDisplayName("§b§l" + arena.getName() + " Dashboard");
+        headerMeta.setDisplayName("§b§l" + arena.getName());
         headerItem.setItemMeta(headerMeta);
 
         for (int i = 0; i < 9; i++) {
             gui.setItem(i, headerItem);
         }
 
-        // Arena info
+        // Arena info (compact)
         ItemStack arenaInfo = new ItemStack(Material.PAPER);
         ItemMeta arenaInfoMeta = arenaInfo.getItemMeta();
-        arenaInfoMeta.setDisplayName("§e§lArena Information");
+        arenaInfoMeta.setDisplayName("§e§lArena Info");
         arenaInfoMeta.setLore(Arrays.asList(
                 "§7Name: §f" + arena.getName(),
                 "§7World: §f" + status.get("world"),
                 "§7Region: §f" + status.get("region"),
-                "§7Enabled: " + ((Boolean) status.get("enabled") ? "§aYes" : "§cNo"),
+                "§7Status: " + ((Boolean) status.get("enabled") ? "§aEnabled" : "§cDisabled"),
                 "",
-                "§7Setup Progress:",
-                getProgressBar(arena)
+                "§7Progress: " + getCompactProgressBar(arena)
         ));
         arenaInfo.setItemMeta(arenaInfoMeta);
         gui.setItem(13, arenaInfo);
 
-        // Lobby setup
+        // Lobby setup (compact)
         boolean lobbyComplete = (Boolean) status.get("lobby_complete");
-        ItemStack lobbyItem = new ItemStack(lobbyComplete ? Material.EMERALD : Material.REDSTONE);
+        ItemStack lobbyItem = new ItemStack(lobbyComplete ? Material.EMERALD_BLOCK : Material.REDSTONE_BLOCK);
         ItemMeta lobbyMeta = lobbyItem.getItemMeta();
-        lobbyMeta.setDisplayName("§a§lLobby Spawn " + (lobbyComplete ? "§a✓" : "§c✗"));
+        lobbyMeta.setDisplayName("§a§lLobby " + (lobbyComplete ? "§a✓" : "§c✗"));
         lobbyMeta.setLore(Arrays.asList(
-                "§7Status: " + (lobbyComplete ? "§aConfigured" : "§cNot Set"),
-                "",
-                "§7The lobby is where players wait",
-                "§7before the game starts.",
-                "",
-                lobbyComplete ? "§a§lCOMPLETE" : "§c§lNEEDS SETUP"
+                "§7Where players wait",
+                lobbyComplete ? "§a§lREADY" : "§c§lNEEDS SETUP"
         ));
         lobbyItem.setItemMeta(lobbyMeta);
-        gui.setItem(20, lobbyItem);
+        gui.setItem(18, lobbyItem);
 
-        // Team setups - FIXED COLORS
-        int[] teamSlots = {21, 23}; // Red and Blue team slots
+        // Team setups - FIXED COLORS (more compact)
+        int[] teamSlots = {20, 24}; // Red and Blue team slots
         Arena.TeamColor[] teams = {Arena.TeamColor.RED, Arena.TeamColor.BLUE};
 
         for (int i = 0; i < teams.length; i++) {
@@ -266,71 +261,65 @@ public class AdminToolManager {
 
             boolean teamFullySetup = spawnsComplete && flagComplete && captureComplete;
 
-            ItemStack teamItem = new ItemStack(teamFullySetup ? Material.LIME_WOOL :
-                    (team == Arena.TeamColor.RED ? Material.RED_WOOL : Material.BLUE_WOOL));
+            ItemStack teamItem = new ItemStack(teamFullySetup ? Material.LIME_CONCRETE :
+                    (team == Arena.TeamColor.RED ? Material.RED_CONCRETE : Material.BLUE_CONCRETE));
             ItemMeta teamMeta = teamItem.getItemMeta();
 
-            // FIXED: Properly apply team colors using ChatColor.translateAlternateColorCodes
+            // FIXED: Properly apply team colors
             String teamDisplayName = ChatColor.translateAlternateColorCodes('&',
                     team.getColorCode() + "§l" + team.getName().toUpperCase() + " TEAM " +
                             (teamFullySetup ? "§a✓" : "§c✗"));
             teamMeta.setDisplayName(teamDisplayName);
 
             teamMeta.setLore(Arrays.asList(
-                    "§7Spawn Points: " + (spawnsComplete ? "§a" + spawnCount + "/4 ✓" : "§c" + spawnCount + "/4 ✗"),
-                    "§7Flag Location: " + (flagComplete ? "§a✓" : "§c✗"),
-                    "§7Capture Point: " + (captureComplete ? "§a✓" : "§c✗"),
+                    "§7Spawns: " + (spawnsComplete ? "§a✓" : "§c" + spawnCount + "/4"),
+                    "§7Flag: " + (flagComplete ? "§a✓" : "§c✗"),
+                    "§7Capture: " + (captureComplete ? "§a✓" : "§c✗"),
                     "",
-                    teamFullySetup ? "§a§lTEAM READY" : "§c§lNEEDS SETUP"
+                    teamFullySetup ? "§a§lREADY" : "§c§lINCOMPLETE"
             ));
             teamItem.setItemMeta(teamMeta);
             gui.setItem(teamSlots[i], teamItem);
         }
 
-        // Powerup spawns
+        // Powerup spawns (compact)
         int powerupCount = plugin.getPowerUpManager().getPowerupSpawnCount(arena);
         ItemStack powerupItem = new ItemStack(powerupCount > 0 ? Material.NETHER_STAR : Material.BARRIER);
         ItemMeta powerupMeta = powerupItem.getItemMeta();
-        powerupMeta.setDisplayName("§d§lPowerup Spawns " + (powerupCount > 0 ? "§a✓" : "§7(Optional)"));
+        powerupMeta.setDisplayName("§d§lPowerups " + (powerupCount > 0 ? "§a✓" : "§7(Optional)"));
         powerupMeta.setLore(Arrays.asList(
-                "§7Spawn Points: §f" + powerupCount,
-                "",
-                "§7Powerups add excitement to matches",
-                "§7by providing temporary advantages.",
-                "",
+                "§7Count: §f" + powerupCount,
                 powerupCount > 0 ? "§a§lCONFIGURED" : "§7§lOPTIONAL"
         ));
         powerupItem.setItemMeta(powerupMeta);
         gui.setItem(22, powerupItem);
 
-        // Action buttons
+        // Action buttons (compact)
         ItemStack saveButton = new ItemStack(arena.isFullyConfigured() ? Material.DIAMOND : Material.BARRIER);
         ItemMeta saveMeta = saveButton.getItemMeta();
-        saveMeta.setDisplayName(arena.isFullyConfigured() ? "§a§lSAVE & ENABLE ARENA" : "§c§lCANNOT SAVE - INCOMPLETE");
+        saveMeta.setDisplayName(arena.isFullyConfigured() ? "§a§lSAVE ARENA" : "§c§lCANNOT SAVE");
         saveMeta.setLore(Arrays.asList(
                 arena.isFullyConfigured() ?
-                        "§7Click to save and enable this arena" :
-                        "§7Complete all required setup first",
-                "",
-                arena.isFullyConfigured() ? "§a§lREADY TO SAVE" : "§c§lNOT READY"
+                        "§7Click to enable arena" :
+                        "§7Complete setup first"
         ));
         saveButton.setItemMeta(saveMeta);
-        gui.setItem(40, saveButton);
+        gui.setItem(31, saveButton);
 
         // Close button
         ItemStack closeButton = new ItemStack(Material.RED_STAINED_GLASS_PANE);
         ItemMeta closeMeta = closeButton.getItemMeta();
-        closeMeta.setDisplayName("§c§lClose Dashboard");
+        closeMeta.setDisplayName("§c§lClose");
         closeButton.setItemMeta(closeMeta);
-        gui.setItem(44, closeButton);
+        gui.setItem(35, closeButton);
 
-        // Bottom decoration
+        // Bottom decoration (minimal)
         ItemStack bottomItem = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta bottomMeta = bottomItem.getItemMeta();
         bottomMeta.setDisplayName("§7");
         bottomItem.setItemMeta(bottomMeta);
 
-        for (int i = 45; i < 54; i++) {
+        for (int i = 36; i < 45; i++) {
             if (gui.getItem(i) == null) {
                 gui.setItem(i, bottomItem);
             }
@@ -340,31 +329,31 @@ public class AdminToolManager {
     }
 
     /**
-     * Get progress bar for arena setup
+     * Get compact progress bar for arena setup (BedWars1058 style)
      */
-    private String getProgressBar(Arena arena) {
+    private String getCompactProgressBar(Arena arena) {
         Map<String, Object> status = arena.getConfigurationStatus();
-        int totalTasks = 15; // 1 lobby + 8 spawns + 2 flags + 2 captures + 2 teams
+        int totalTasks = 7; // 1 lobby + 2 teams (spawns + flag + capture each)
         int completedTasks = 0;
 
-        // Count completed tasks
+        // Count completed tasks (simplified)
         if ((Boolean) status.get("lobby_complete")) completedTasks++;
-        if ((Boolean) status.get("red_spawns_complete")) completedTasks += 4;
-        if ((Boolean) status.get("blue_spawns_complete")) completedTasks += 4;
+        if ((Boolean) status.get("red_spawns_complete")) completedTasks++;
         if ((Boolean) status.get("red_flag_complete")) completedTasks++;
-        if ((Boolean) status.get("blue_flag_complete")) completedTasks++;
         if ((Boolean) status.get("red_capture_complete")) completedTasks++;
+        if ((Boolean) status.get("blue_spawns_complete")) completedTasks++;
+        if ((Boolean) status.get("blue_flag_complete")) completedTasks++;
         if ((Boolean) status.get("blue_capture_complete")) completedTasks++;
 
         double progress = (double) completedTasks / totalTasks;
-        int bars = (int) (progress * 20);
+        int bars = (int) (progress * 10);
 
-        StringBuilder progressBar = new StringBuilder("§a");
-        for (int i = 0; i < 20; i++) {
+        StringBuilder progressBar = new StringBuilder();
+        for (int i = 0; i < 10; i++) {
             if (i < bars) {
-                progressBar.append("█");
+                progressBar.append("§a●");
             } else {
-                progressBar.append("§7█");
+                progressBar.append("§7●");
             }
         }
 
