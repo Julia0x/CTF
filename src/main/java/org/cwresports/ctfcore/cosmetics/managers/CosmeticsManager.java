@@ -33,10 +33,12 @@ public class CosmeticsManager {
     /**
      * Give a cosmetic to a player
      */
-    public void giveCosmetic(Player player, String cosmeticId) {
-        if (player != null) {
+    public boolean giveCosmetic(Player player, String cosmeticId) {
+        if (player != null && storage.getCosmetics().containsKey(cosmeticId)) {
             storage.giveCosmetic(player.getUniqueId(), cosmeticId);
+            return true;
         }
+        return false;
     }
 
     /**
