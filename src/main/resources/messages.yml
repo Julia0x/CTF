@@ -86,11 +86,7 @@ lobby-select-team: "&a👥 Click to select your team!"
 lobby-leave-game: "&c🚪 Click to leave the game!"
 lobby-team-full: "&c❌ This team is full! ({current}/{max} players)"
 
-# Player actions - REDUCED NOISE - FIXED DUPLICATE MESSAGE
-joined-game: "&a✅ You joined the game in arena &e{arena}&a. ({current_players}/{max_players})"
-left-game: "&e🚪 You left the game."
-player-left-arena: "&e👥 &e{player} &eleft the arena. ({current_players}/{max_players})"
-assigned-to-team: "&a👥 You have been assigned to the {team_color}{team_name} team&a."
+# Player actions - REDUCED NOISE - REMOVED JOIN/LEAVE MESSAGES
 already-in-game: "&c❌ You are already in a CTF game."
 
 # Flag events - CLEAN AND SPACED PROPERLY
