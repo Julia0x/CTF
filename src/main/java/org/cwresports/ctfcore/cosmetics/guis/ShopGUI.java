@@ -42,7 +42,7 @@ public class ShopGUI {
         gui.setItem(12, createCategoryItem(Material.SKELETON_SKULL, "§8☠ Death Effects", CosmeticType.DEATH_EFFECT));
         gui.setItem(14, createCategoryItem(Material.FIREWORK_ROCKET, "§e🎉 Victory Celebrations", CosmeticType.VICTORY_CELEBRATION));
         gui.setItem(16, createCategoryItem(Material.FEATHER, "§b✨ Trails", CosmeticType.TRAIL_EFFECT));
-        gui.setItem(28, createCategoryItem(Material.BANNER_PATTERN, "§6🏴 Banners", CosmeticType.BANNER));
+        gui.setItem(28, createCategoryItem(Material.WHITE_BANNER, "§6🏴 Banners", CosmeticType.BANNER));
         gui.setItem(30, createCategoryItem(Material.NAME_TAG, "§d💬 Chat Colors", CosmeticType.CHAT_COLOR));
 
         // Featured items
