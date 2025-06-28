@@ -23,6 +23,11 @@ commands:
     usage: /ctf <subcommand>
     aliases: [capturetheflag]
 
+  cosmetics:
+    description: Open the cosmetics menu
+    usage: /cosmetics
+    aliases: [cosm, battlepass, bp]
+
 permissions:
   ctf.admin:
     description: Access to all CTF administrative commands
