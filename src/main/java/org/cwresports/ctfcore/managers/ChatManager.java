@@ -140,7 +140,16 @@ public class ChatManager {
      */
     private String formatMessage(Player player, String message, String template) {
         CTFPlayer ctfPlayer = plugin.getGameManager().getCTFPlayer(player);
-        int level = ctfPlayer != null ? ctfPlayer.getLevel() : 1;
+        
+        // Always get fresh level data to avoid caching issues
+        int level = 1;
+        if (ctfPlayer != null) {
+            level = ctfPlayer.getLevel();
+        } else {
+            // Load fresh player data if not in game
+            Map<String, Object> playerData = plugin.getPlayerDataManager().loadPlayerData(player.getUniqueId());
+            level = (Integer) playerData.getOrDefault("level", 1);
+        }
 
         // Team prefix
         String teamPrefix = "";
@@ -159,7 +168,7 @@ public class ChatManager {
                 .replace("{level}", String.valueOf(level))
                 .replace("{team_prefix}", teamPrefix);
 
-        // Process PlaceholderAPI placeholders if available
+        // Process PlaceholderAPI placeholders if available (includes LuckPerms prefix/suffix)
         formatted = plugin.processPlaceholders(player, formatted);
 
         // Apply color codes
