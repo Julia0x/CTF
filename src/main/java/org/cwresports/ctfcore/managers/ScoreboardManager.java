@@ -320,6 +320,20 @@ public class ScoreboardManager {
         text = text.replace("{total_deaths}", String.valueOf(ctfPlayer.getTotalDeaths()));
         text = text.replace("{win_rate}", String.format("%.1f", ctfPlayer.getWinRate() * 100));
 
+        // Flag carrying status
+        if (ctfPlayer.hasFlag()) {
+            Arena.TeamColor flagTeam = ctfPlayer.getCarryingFlag().getTeam();
+            String flagDisplay = plugin.getConfigManager().getScoreboards().getString(
+                "placeholders.carrying-flag." + flagTeam.getName(), 
+                flagTeam.getColorCode() + "🚩 " + flagTeam.getName().toUpperCase() + " FLAG");
+            text = text.replace("{carrying_flag}", flagDisplay);
+            text = text.replace("{has_flag}", "true");
+        } else {
+            text = text.replace("{carrying_flag}", plugin.getConfigManager().getScoreboards().getString(
+                "placeholders.carrying-flag.none", ""));
+            text = text.replace("{has_flag}", "false");
+        }
+
         return processPlaceholders(player, text);
     }
 
