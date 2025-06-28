@@ -37,14 +37,20 @@ public class Achievement {
     private final AchievementCategory category;
     private final int maxProgress;
     private final List<String> rewards;
+    private final boolean hidden;
 
     public Achievement(String id, String name, String description, AchievementCategory category, int maxProgress, List<String> rewards) {
+        this(id, name, description, category, maxProgress, rewards, false);
+    }
+
+    public Achievement(String id, String name, String description, AchievementCategory category, int maxProgress, List<String> rewards, boolean hidden) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.category = category;
         this.maxProgress = maxProgress;
         this.rewards = rewards;
+        this.hidden = hidden;
     }
 
     public String getId() {
