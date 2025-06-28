@@ -332,27 +332,50 @@ public class ScoreboardManager {
     }
 
     /**
-     * Create progress bar
+     * Create progress bar with small symbols (BedWars1058 style)
      */
     private String createProgressBar(double progress) {
-        int length = plugin.getConfigManager().getScoreboards().getInt("placeholders.progress-bar.length", 10);
-        String filledChar = plugin.getConfigManager().getScoreboards().getString("placeholders.progress-bar.filled-char", "█");
-        String emptyChar = plugin.getConfigManager().getScoreboards().getString("placeholders.progress-bar.empty-char", "█");
+        int length = plugin.getConfigManager().getScoreboards().getInt("placeholders.progress-bar.length", 8);
+        String filledChar = plugin.getConfigManager().getScoreboards().getString("placeholders.progress-bar.filled-char", "●");
+        String emptyChar = plugin.getConfigManager().getScoreboards().getString("placeholders.progress-bar.empty-char", "○");
         String filledColor = plugin.getConfigManager().getScoreboards().getString("placeholders.progress-bar.filled-color", "&a");
         String emptyColor = plugin.getConfigManager().getScoreboards().getString("placeholders.progress-bar.empty-color", "&7");
 
         int filled = (int) (progress * length);
-        StringBuilder bar = new StringBuilder(filledColor);
+        StringBuilder bar = new StringBuilder();
 
         for (int i = 0; i < length; i++) {
             if (i < filled) {
-                bar.append(filledChar);
+                bar.append(filledColor).append(filledChar);
             } else {
                 bar.append(emptyColor).append(emptyChar);
             }
         }
 
         return ChatColor.translateAlternateColorCodes('&', bar.toString());
+    }
+
+    /**
+     * Create small level progress indicator (dots style)
+     */
+    private String createLevelProgress(double progress) {
+        String style = plugin.getConfigManager().getScoreboards().getString("placeholders.level-progress.style", "dots");
+        int length = plugin.getConfigManager().getScoreboards().getInt("placeholders.level-progress.length", 5);
+        String filled = plugin.getConfigManager().getScoreboards().getString("placeholders.level-progress.filled", "&a●");
+        String empty = plugin.getConfigManager().getScoreboards().getString("placeholders.level-progress.empty", "&8●");
+
+        int filledCount = (int) (progress * length);
+        StringBuilder progressBar = new StringBuilder();
+
+        for (int i = 0; i < length; i++) {
+            if (i < filledCount) {
+                progressBar.append(filled);
+            } else {
+                progressBar.append(empty);
+            }
+        }
+
+        return ChatColor.translateAlternateColorCodes('&', progressBar.toString());
     }
 
     /**
