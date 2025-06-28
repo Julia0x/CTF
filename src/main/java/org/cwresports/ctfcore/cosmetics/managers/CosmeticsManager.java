@@ -182,4 +182,17 @@ public class CosmeticsManager {
         // Clean up any active effects
         unloadPlayerData(player);
     }
+
+    /**
+     * Get color code for rarity
+     */
+    public static String getColorCode(String rarity) {
+        switch (rarity.toLowerCase()) {
+            case "common": return "§f";
+            case "rare": return "§9";
+            case "epic": return "§5";
+            case "legendary": return "§6";
+            default: return "§7";
+        }
+    }
 }
