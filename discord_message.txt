@@ -1,0 +1,42 @@
+🏆 **CTF-Core v1.0.0 - NOW AVAILABLE!** 🏆
+
+The **ultimate Capture the Flag plugin** has arrived! Transform your server with the most advanced CTF experience available for Paper 1.21+
+
+## ✨ **What Makes CTF-Core Special?**
+
+🎯 **Complete CTF Gameplay**
+• Multi-arena support with WorldGuard integration
+• Team battles (Red vs Blue) with flag mechanics
+• Player progression with levels & XP system
+
+🏆 **HOLOGRAM LEADERBOARDS** ⭐ *NEW!*
+• Real-time floating statistics displays
+• Beautiful rank colors (Gold, Yellow, Red, Gray)
+• 4 types: Kills, Captures, Level, Games Won
+• Auto-updates every 30 seconds
+
+⚡ **Advanced Features**
+• Power-ups & kill streaks
+• Spectator mode & custom scoreboards
+• Admin toolkit with visual setup guides
+• PlaceholderAPI, Vault & WorldGuard support
+
+## 🛠 **Easy Setup**
+```
+1. Install dependencies (WorldGuard, WorldEdit, DecentHolograms)
+2. Drop CTF-Core.jar in plugins folder
+3. /ctfadmin create <arena> <region>
+4. /ctfadmin leaderboard create kills 10
+5. Players join with /ctf join
+```
+
+## 📥 **Download & Info**
+🔗 **SpigotMC:** [Your SpigotMC Link Here]
+📚 **Requirements:** Paper 1.21+, WorldGuard, WorldEdit
+🆓 **Price:** FREE
+
+Perfect for PvP servers, minigame networks, and competitive communities! 
+
+*Featuring professional-grade hologram leaderboards that will blow your players away!* ✨
+
+#minecraft #ctf #plugin #hologram #pvp
