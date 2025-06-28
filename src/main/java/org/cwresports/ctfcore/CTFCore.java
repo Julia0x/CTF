@@ -371,6 +371,10 @@ public class CTFCore extends JavaPlugin {
         return currencyManager;
     }
 
+    public TabListManager getTabListManager() {
+        return tabListManager;
+    }
+
     public boolean isPlaceholderAPIEnabled() {
         return placeholderAPIEnabled;
     }
