@@ -961,11 +961,25 @@ public class GameManager {
             plugin.getPlayerDataManager().savePlayerData(ctfPlayer);
         }
 
-        // Give end game items
+        // Immediately clean inventory and give leave item to all players
         for (CTFPlayer ctfPlayer : game.getPlayers()) {
             Player player = ctfPlayer.getPlayer();
             if (player != null && player.isOnline()) {
-                plugin.getLobbyManager().giveGameEndItems(player);
+                // Immediately clear inventory and give leave bed
+                player.getInventory().clear();
+                
+                // Give leave bed item
+                ItemStack leaveBed = new ItemStack(Material.RED_BED);
+                org.bukkit.inventory.meta.ItemMeta meta = leaveBed.getItemMeta();
+                meta.setDisplayName("§c§lLeave to Lobby");
+                meta.setLore(java.util.Arrays.asList(
+                    "§7Right-click to return to server lobby",
+                    "§eOr wait for automatic teleport"
+                ));
+                leaveBed.setItemMeta(meta);
+                
+                player.getInventory().setItem(8, leaveBed); // Slot 8 (far right)
+                player.updateInventory();
             }
         }
 
