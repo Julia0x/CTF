@@ -231,6 +231,10 @@ public class CTFCore extends JavaPlugin {
         chatManager = new ChatManager(this);
         adminToolManager = new AdminToolManager(this);
         tabListManager = new TabListManager(this);
+        
+        // Initialize cosmetics managers
+        cosmeticsManager = new org.cwresports.ctfcore.cosmetics.managers.CosmeticsManager(this);
+        achievementManager = new org.cwresports.ctfcore.cosmetics.managers.AchievementManager(this);
 
         // Load data that depends on config
         arenaManager.loadArenas();
