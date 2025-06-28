@@ -217,6 +217,7 @@ public class CTFCore extends JavaPlugin {
         spectatorManager = new SpectatorManager(this);
         chatManager = new ChatManager(this);
         adminToolManager = new AdminToolManager(this);
+        tabListManager = new TabListManager(this);
 
         // Load data that depends on config
         arenaManager.loadArenas();
