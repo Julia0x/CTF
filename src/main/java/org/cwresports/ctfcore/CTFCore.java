@@ -23,6 +23,7 @@ public class CTFCore extends JavaPlugin {
 
     // Managers
     private ConfigManager configManager;
+    private ConfigMigrationManager configMigrationManager;
     private ArenaManager arenaManager;
     private GameManager gameManager;
     private PlayerDataManager playerDataManager;
@@ -32,6 +33,7 @@ public class CTFCore extends JavaPlugin {
     private ScoreboardManager scoreboardManager;
     private LobbyManager lobbyManager;
     private ServerLobbyManager serverLobbyManager;
+    private AutojoinManager autojoinManager;
     private MessageManager messageManager;
     private PowerUpManager powerUpManager;
     private SpectatorManager spectatorManager;
