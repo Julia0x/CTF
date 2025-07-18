@@ -298,7 +298,7 @@ public class AutojoinManager {
 
         for (Arena arena : plugin.getArenaManager().getEnabledArenas()) {
             if (arena.isEnabled()) {
-                CTFGame game = plugin.getGameManager().getGame(arena.getName());
+                CTFGame game = plugin.getGameManager().getGame(arena);
                 if (game != null && (game.getState() == GameState.WAITING || game.getState() == GameState.STARTING)) {
                     waitingGames++;
                     totalWaitingPlayers += game.getPlayers().size();
