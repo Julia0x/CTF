@@ -1,6 +1,9 @@
 # CTF-Core Messages Configuration
 # Supports color codes (&) and placeholders: {player}, {arena}, {team_name}, {team_color}, {flag_count}, {time_left}
 
+# Configuration version - DO NOT MODIFY
+config-version: "1.1.0"
+
 plugin-prefix: "&e[CTF] &r"
 
 # General messages
@@ -9,6 +12,16 @@ player-only: "&c❌ This command can only be used by players."
 unknown-command: "&c❌ Unknown command. Use &e/ctf help &cfor available commands."
 plugin-reloaded: "&a✅ Plugin configuration reloaded successfully."
 welcome-message: "&a✅ Welcome to the CTF server, {player}!"
+
+# Autojoin messages
+autojoin-searching: "&e⏳ Searching for available games..."
+autojoin-found: "&a✅ Found game! Joining arena &e{arena}&a..."
+autojoin-no-games: "&c❌ No games available right now. Try again later!"
+autojoin-joined-populated: "&a🎮 Joined game with {player_count} other players!"
+autojoin-joined-random: "&a🎲 Started a new game in arena &e{arena}&a!"
+autojoin-failed: "&c❌ Failed to join arena &e{arena}&c. Trying another..."
+autojoin-cooldown: "&c❌ Please wait {seconds} seconds before trying autojoin again."
+autojoin-disabled: "&c❌ Autojoin is currently disabled."
 
 # Arena management messages
 arena-created: "&a✅ Arena &e{arena} &acreated successfully!\n&7   Use the admin toolkit to set up the arena."
