@@ -1,6 +1,9 @@
 # CTF-Core Configuration File
 # Plugin by CWReSports
 
+# Configuration version - DO NOT MODIFY
+config-version: "1.1.0"
+
 # Settings for game flow and rules
 gameplay:
   min-players-to-start: 8
@@ -16,6 +19,23 @@ gameplay:
   team-balance-threshold: 2
   max-players-per-team: 4
   auto-leave-delay-seconds: 10
+
+# Autojoin system configuration
+autojoin:
+  enabled: true
+  prefer-populated-games: true
+  min-players-threshold: 2
+  item-name: "&a&lAuto Join Game"
+  item-lore:
+    - "&7Click to automatically join"
+    - "&7a game with other players!"
+    - ""
+    - "&ePrefers games with more players"
+
+# Server lobby configuration
+server-lobby:
+  give-items: true
+  clear-inventory: true
 
 # Flag capture system settings
 flag-capture:
@@ -62,6 +82,8 @@ sounds:
   game_win: "ENTITY_FIREWORK_ROCKET_LAUNCH"
   game_lose: "ENTITY_VILLAGER_NO"
   level_up: "ENTITY_PLAYER_LEVELUP"
+  autojoin_found: "ENTITY_PLAYER_LEVELUP"
+  autojoin_searching: "BLOCK_NOTE_BLOCK_PLING"
 
 # Chat formatting
 chat:
