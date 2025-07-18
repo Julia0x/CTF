@@ -24,6 +24,8 @@ flag-capture:
   capture-time-seconds: 3  # Time required to capture flag (configurable)
   show-capture-title: true  # Show title during capture process
   allow-movement-in-area: true  # Allow player to move within capture area
+  instant-capture: false  # If true, capture flag instantly when entering area
+  instant-break: false  # If true, take enemy flag instantly when approaching
 
 # Experience and level system
 experience:
