@@ -17,6 +17,14 @@ gameplay:
   max-players-per-team: 4
   auto-leave-delay-seconds: 10
 
+# Flag capture system settings
+flag-capture:
+  mode: "automatic"  # "automatic" or "right-click"
+  automatic-radius: 2  # Radius in blocks for automatic capture (configurable)
+  capture-time-seconds: 3  # Time required to capture flag (configurable)
+  show-capture-title: true  # Show title during capture process
+  allow-movement-in-area: true  # Allow player to move within capture area
+
 # Experience and level system
 experience:
   per-kill: 10              # XP gained per kill
