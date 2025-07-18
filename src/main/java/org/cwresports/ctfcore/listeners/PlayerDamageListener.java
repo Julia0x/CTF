@@ -2,6 +2,7 @@ package org.cwresports.ctfcore.listeners;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -10,7 +11,8 @@ import org.cwresports.ctfcore.models.CTFPlayer;
 import org.cwresports.ctfcore.models.GameState;
 
 /**
- * Handles player damage events for spawn protection and CTF rules
+ * Enhanced player damage listener with improved spawn protection logic
+ * Handles spawn protection removal on attack attempts and better PvP management
  */
 public class PlayerDamageListener implements Listener {
     
@@ -20,7 +22,7 @@ public class PlayerDamageListener implements Listener {
         this.plugin = plugin;
     }
     
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerDamage(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof Player)) {
             return;
@@ -33,14 +35,15 @@ public class PlayerDamageListener implements Listener {
             return;
         }
         
-        // Check spawn protection
+        // Check spawn protection for the victim
         if (plugin.getGameManager().hasSpawnProtection(player)) {
             event.setCancelled(true);
             
             // Notify attacker if it's PvP damage
             if (event instanceof EntityDamageByEntityEvent damageByEntity) {
                 if (damageByEntity.getDamager() instanceof Player attacker) {
-                    attacker.sendMessage("§c⛨ That player has spawn protection!");
+                    String message = plugin.getMessageManager().processMessage("&c⛨ That player has spawn protection!");
+                    attacker.sendMessage(message);
                 }
             }
             return;
@@ -53,7 +56,7 @@ public class PlayerDamageListener implements Listener {
         }
     }
     
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerDamageByPlayer(EntityDamageByEntityEvent event) {
         if (!(event.getEntity() instanceof Player victim) || !(event.getDamager() instanceof Player attacker)) {
             return;
@@ -77,22 +80,33 @@ public class PlayerDamageListener implements Listener {
         if (victimCtfPlayer.getTeam() != null && attackerCtfPlayer.getTeam() != null &&
             victimCtfPlayer.getTeam().equals(attackerCtfPlayer.getTeam())) {
             event.setCancelled(true);
-            attacker.sendMessage("§c⚠ You cannot damage your teammates!");
+            String message = plugin.getMessageManager().processMessage("&c⚠ You cannot damage your teammates!");
+            attacker.sendMessage(message);
             return;
         }
         
         // Check spawn protection for victim
         if (plugin.getGameManager().hasSpawnProtection(victim)) {
             event.setCancelled(true);
-            attacker.sendMessage("§c⛨ That player has spawn protection!");
+            String message = plugin.getMessageManager().processMessage("&c⛨ That player has spawn protection!");
+            attacker.sendMessage(message);
             return;
         }
         
-        // Check spawn protection for attacker (prevent attacking while protected)
+        // **ENHANCED FEATURE: Remove spawn protection from attacker when they try to attack**
         if (plugin.getGameManager().hasSpawnProtection(attacker)) {
-            event.setCancelled(true);
-            attacker.sendMessage("§c⛨ You cannot attack while you have spawn protection!");
-            return;
+            // Remove spawn protection from attacker immediately
+            plugin.getGameManager().removeSpawnProtection(attacker);
+            
+            // Notify attacker that their protection was removed
+            String message = plugin.getMessageManager().processMessage("&e⛨ Your spawn protection has been removed because you attacked!");
+            attacker.sendMessage(message);
+            
+            // Remove the spawn protection boss bar
+            plugin.getMessageManager().removeSpawnProtectionBossBar(attacker);
+            
+            // Allow the attack to continue (don't cancel the event)
+            plugin.getLogger().info("Removed spawn protection from " + attacker.getName() + " for attacking " + victim.getName());
         }
     }
 }
