@@ -157,7 +157,7 @@ public class ConfigMigrationManager {
             config.set("autojoin.prefer-populated-games", true);
             config.set("autojoin.min-players-threshold", 2);
             config.set("autojoin.item-name", "&a&lAuto Join Game");
-            config.set("autojoin.item-lore", List.of(
+            config.set("autojoin.item-lore", Arrays.asList(
                 "&7Click to automatically join",
                 "&7a game with other players!",
                 "",
