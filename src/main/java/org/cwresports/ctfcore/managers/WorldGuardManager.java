@@ -2,206 +2,182 @@ package org.cwresports.ctfcore.managers;
 
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import com.sk89q.worldguard.protection.flags.Flags;
+import com.sk89q.worldguard.protection.flags.StateFlag;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.entity.Player;
 
 /**
- * Manages WorldGuard integration for arena boundaries and region validation
- * Updated to use modern WorldGuard API without deprecated methods
+ * Enhanced WorldGuard integration manager with passthrough control
  */
 public class WorldGuardManager {
-
-    private final WorldGuard worldGuard;
-    private final WorldGuardPlugin worldGuardPlugin;
-
-    public WorldGuardManager() {
-        this.worldGuard = WorldGuard.getInstance();
-        this.worldGuardPlugin = WorldGuardPlugin.inst();
-    }
-
+    
     /**
-     * Check if a WorldGuard region exists in the specified world - ENHANCED ERROR HANDLING
-     */
-    public boolean regionExists(World world, String regionName) {
-        if (world == null || regionName == null || regionName.trim().isEmpty()) {
-            return false;
-        }
-
-        try {
-            RegionManager regionManager = worldGuard.getPlatform().getRegionContainer()
-                    .get(BukkitAdapter.adapt(world));
-
-            if (regionManager == null) {
-                // Log warning for debugging
-                System.out.println("[CTF-Core] Warning: RegionManager is null for world: " + world.getName());
-                return false;
-            }
-
-            return regionManager.hasRegion(regionName.toLowerCase());
-        } catch (Exception e) {
-            // Enhanced error logging
-            System.out.println("[CTF-Core] Error checking region '" + regionName + "' in world '" + world.getName() + "': " + e.getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Check if a location is within a specific WorldGuard region - ENHANCED ERROR HANDLING
+     * Check if a location is within a WorldGuard region
      */
     public boolean isLocationInRegion(Location location, String regionName) {
-        if (location == null || regionName == null || regionName.trim().isEmpty()) {
+        if (location == null || regionName == null) {
             return false;
         }
-
+        
         try {
             World world = location.getWorld();
             if (world == null) {
-                System.out.println("[CTF-Core] Warning: Location has null world");
                 return false;
             }
-
-            RegionManager regionManager = worldGuard.getPlatform().getRegionContainer()
+            
+            RegionManager regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer()
                     .get(BukkitAdapter.adapt(world));
-
+            
             if (regionManager == null) {
-                System.out.println("[CTF-Core] Warning: RegionManager is null for world: " + world.getName());
                 return false;
             }
-
-            ProtectedRegion region = regionManager.getRegion(regionName.toLowerCase());
+            
+            ProtectedRegion region = regionManager.getRegion(regionName);
             if (region == null) {
                 return false;
             }
-
-            return region.contains(BukkitAdapter.asBlockVector(location));
+            
+            return region.contains(location.getBlockX(), location.getBlockY(), location.getBlockZ());
         } catch (Exception e) {
-            System.out.println("[CTF-Core] Error checking if location is in region '" + regionName + "': " + e.getMessage());
             return false;
         }
     }
-
+    
     /**
-     * Check if a player is within a specific WorldGuard region
+     * Get the current passthrough state of a region
      */
-    public boolean isPlayerInRegion(Player player, String regionName) {
-        return isLocationInRegion(player.getLocation(), regionName);
-    }
-
-    /**
-     * Get the WorldGuard region at a specific location
-     */
-    public ProtectedRegion getRegionAt(Location location) {
+    public boolean getRegionPassthroughState(String regionName) {
         try {
-            World world = location.getWorld();
-            if (world == null) {
-                return null;
-            }
-
-            RegionManager regionManager = worldGuard.getPlatform().getRegionContainer()
-                    .get(BukkitAdapter.adapt(world));
-
-            if (regionManager == null) {
-                return null;
-            }
-
-            // Get the highest priority region at this location
-            var regions = regionManager.getApplicableRegions(BukkitAdapter.asBlockVector(location));
-
-            ProtectedRegion highestPriorityRegion = null;
-            int highestPriority = Integer.MIN_VALUE;
-
-            for (ProtectedRegion region : regions) {
-                if (region.getPriority() > highestPriority) {
-                    highestPriority = region.getPriority();
-                    highestPriorityRegion = region;
+            // Find the region in any world (assuming region names are unique)
+            for (World world : org.bukkit.Bukkit.getWorlds()) {
+                RegionManager regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer()
+                        .get(BukkitAdapter.adapt(world));
+                
+                if (regionManager != null) {
+                    ProtectedRegion region = regionManager.getRegion(regionName);
+                    if (region != null) {
+                        StateFlag.State state = region.getFlag(Flags.PASSTHROUGH);
+                        if (state == StateFlag.State.ALLOW) {
+                            return true;
+                        } else if (state == StateFlag.State.DENY) {
+                            return false;
+                        }
+                        // If null, return default (false)
+                        return false;
+                    }
                 }
             }
-
-            return highestPriorityRegion;
         } catch (Exception e) {
-            return null;
+            // Log error but don't crash
+            System.err.println("Error getting passthrough state for region " + regionName + ": " + e.getMessage());
         }
+        return false; // Default to false if region not found or error
     }
-
+    
     /**
-     * Check if WorldGuard is available and functioning
+     * Set the passthrough state of a region
      */
-    public boolean isWorldGuardAvailable() {
-        return worldGuard != null && worldGuardPlugin != null;
-    }
-
-    /**
-     * Get a safe location within a region (for teleporting players back)
-     */
-    public Location getSafeLocationInRegion(World world, String regionName) {
+    public void setRegionPassthrough(String regionName, boolean enabled) {
         try {
-            RegionManager regionManager = worldGuard.getPlatform().getRegionContainer()
-                    .get(BukkitAdapter.adapt(world));
-
-            if (regionManager == null) {
-                return null;
+            // Find the region in any world (assuming region names are unique)
+            for (World world : org.bukkit.Bukkit.getWorlds()) {
+                RegionManager regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer()
+                        .get(BukkitAdapter.adapt(world));
+                
+                if (regionManager != null) {
+                    ProtectedRegion region = regionManager.getRegion(regionName);
+                    if (region != null) {
+                        StateFlag.State state = enabled ? StateFlag.State.ALLOW : StateFlag.State.DENY;
+                        region.setFlag(Flags.PASSTHROUGH, state);
+                        
+                        // Save changes
+                        try {
+                            regionManager.saveChanges();
+                        } catch (Exception e) {
+                            System.err.println("Error saving region changes: " + e.getMessage());
+                        }
+                        
+                        return; // Found and updated the region
+                    }
+                }
             }
-
-            ProtectedRegion region = regionManager.getRegion(regionName);
-            if (region == null) {
-                return null;
-            }
-
-            // Get the minimum point of the region and add some height for safety
-            var minPoint = region.getMinimumPoint();
-            Location safeLocation = new Location(world,
-                    minPoint.x() + 1,  // Use x() instead of getX()
-                    minPoint.y() + 2,  // Use y() instead of getY()
-                    minPoint.z() + 1); // Use z() instead of getZ()
-
-            // Make sure the location is safe (not in a block)
-            if (safeLocation.getBlock().getType().isSolid()) {
-                safeLocation.setY(world.getHighestBlockYAt(safeLocation) + 1);
-            }
-
-            return safeLocation;
+            
+            System.err.println("Region not found: " + regionName);
         } catch (Exception e) {
-            return null;
+            System.err.println("Error setting passthrough for region " + regionName + ": " + e.getMessage());
         }
     }
-
+    
     /**
-     * Calculate if a player is near the edge of a region (for boundary warnings)
+     * Check if a region exists
      */
-    public boolean isNearRegionBoundary(Player player, String regionName, double distance) {
+    public boolean regionExists(String regionName) {
+        try {
+            for (World world : org.bukkit.Bukkit.getWorlds()) {
+                RegionManager regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer()
+                        .get(BukkitAdapter.adapt(world));
+                
+                if (regionManager != null) {
+                    ProtectedRegion region = regionManager.getRegion(regionName);
+                    if (region != null) {
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error checking region existence: " + e.getMessage());
+        }
+        return false;
+    }
+    
+    /**
+     * Get a region by name
+     */
+    public ProtectedRegion getRegion(String regionName) {
+        try {
+            for (World world : org.bukkit.Bukkit.getWorlds()) {
+                RegionManager regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer()
+                        .get(BukkitAdapter.adapt(world));
+                
+                if (regionManager != null) {
+                    ProtectedRegion region = regionManager.getRegion(regionName);
+                    if (region != null) {
+                        return region;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting region: " + e.getMessage());
+        }
+        return null;
+    }
+    
+    /**
+     * Check if a player can build in a region
+     */
+    public boolean canBuildInRegion(org.bukkit.entity.Player player, String regionName) {
         try {
             World world = player.getWorld();
-            RegionManager regionManager = worldGuard.getPlatform().getRegionContainer()
+            RegionManager regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer()
                     .get(BukkitAdapter.adapt(world));
-
+            
             if (regionManager == null) {
                 return false;
             }
-
+            
             ProtectedRegion region = regionManager.getRegion(regionName);
             if (region == null) {
                 return false;
             }
-
-            Location playerLoc = player.getLocation();
-
-            // Check distance to each boundary using modern API
-            var minPoint = region.getMinimumPoint();
-            var maxPoint = region.getMaximumPoint();
-
-            double distanceToMinX = Math.abs(playerLoc.getX() - minPoint.x()); // Use x() instead of getX()
-            double distanceToMaxX = Math.abs(playerLoc.getX() - maxPoint.x()); // Use x() instead of getX()
-            double distanceToMinZ = Math.abs(playerLoc.getZ() - minPoint.z()); // Use z() instead of getZ()
-            double distanceToMaxZ = Math.abs(playerLoc.getZ() - maxPoint.z()); // Use z() instead of getZ()
-
-            double minDistance = Math.min(Math.min(distanceToMinX, distanceToMaxX),
-                    Math.min(distanceToMinZ, distanceToMaxZ));
-
-            return minDistance <= distance;
+            
+            // Check if player has build permission
+            return region.isMember(WorldGuard.getInstance().getPlatform().getSessionManager()
+                    .get(BukkitAdapter.adapt(player)).getUuid()) || 
+                   region.isOwner(WorldGuard.getInstance().getPlatform().getSessionManager()
+                    .get(BukkitAdapter.adapt(player)).getUuid());
         } catch (Exception e) {
             return false;
         }
