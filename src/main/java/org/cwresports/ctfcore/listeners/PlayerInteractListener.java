@@ -23,8 +23,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Handles ALL flag interactions with 3-second right-click hold requirement
- * Also handles admin tool interactions
+ * Enhanced player interact listener with configurable flag capture system
+ * Handles both right-click and automatic flag interactions based on configuration
  */
 public class PlayerInteractListener implements Listener {
 
@@ -110,12 +110,16 @@ public class PlayerInteractListener implements Listener {
             return;
         }
 
-        // Handle flag interactions (take, capture, pickup, return)
-        handleFlagInteractions(event, player, block);
+        // Check if flag capture is set to right-click mode
+        String captureMode = plugin.getConfigManager().getMainConfig().getString("flag-capture.mode", "automatic");
+        if (captureMode.equals("right-click")) {
+            // Handle right-click flag interactions
+            handleFlagInteractions(event, player, block);
+        }
     }
 
     /**
-     * Handle all flag interactions with 3-second hold requirement
+     * Handle flag interactions with right-click system (legacy system)
      */
     private void handleFlagInteractions(PlayerInteractEvent event, Player player, Block block) {
         CTFPlayer ctfPlayer = plugin.getGameManager().getCTFPlayer(player);
@@ -403,5 +407,15 @@ public class PlayerInteractListener implements Listener {
         } else {
             player.sendMessage(plugin.getConfigManager().getMessage("error-generic"));
         }
+    }
+
+    /**
+     * Clean up interaction attempts
+     */
+    public void cleanup() {
+        for (InteractionAttempt attempt : activeAttempts.values()) {
+            attempt.getCountdownTask().cancel();
+        }
+        activeAttempts.clear();
     }
 }
