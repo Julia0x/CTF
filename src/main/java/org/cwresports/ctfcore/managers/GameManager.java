@@ -15,8 +15,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Enhanced game manager with comprehensive spawn protection and block tracking
- * Manages all active CTF games and player interactions with improved systems
+ * Enhanced game manager with improved reconnection handling and lobby item management
+ * Manages all active CTF games and player interactions with comprehensive systems
  */
 public class GameManager {
 
@@ -27,6 +27,36 @@ public class GameManager {
     private final Map<UUID, Integer> killStreaks;
     private final Map<Arena.TeamColor, Integer> teamKillCounts;
     private final Map<UUID, BukkitTask> respawnTasks;
+    private final Map<UUID, PlayerReconnectionData> reconnectionData;
+
+    /**
+     * Stores data needed for player reconnection
+     */
+    private static class PlayerReconnectionData {
+        private final UUID playerId;
+        private final String arenaName;
+        private final Arena.TeamColor team;
+        private final GameState gameState;
+        private final boolean hadFlag;
+        private final long disconnectTime;
+
+        public PlayerReconnectionData(UUID playerId, String arenaName, Arena.TeamColor team, 
+                                    GameState gameState, boolean hadFlag) {
+            this.playerId = playerId;
+            this.arenaName = arenaName;
+            this.team = team;
+            this.gameState = gameState;
+            this.hadFlag = hadFlag;
+            this.disconnectTime = System.currentTimeMillis();
+        }
+
+        public UUID getPlayerId() { return playerId; }
+        public String getArenaName() { return arenaName; }
+        public Arena.TeamColor getTeam() { return team; }
+        public GameState getGameState() { return gameState; }
+        public boolean hadFlag() { return hadFlag; }
+        public long getDisconnectTime() { return disconnectTime; }
+    }
 
     public GameManager(CTFCore plugin) {
         this.plugin = plugin;
@@ -36,10 +66,14 @@ public class GameManager {
         this.killStreaks = new ConcurrentHashMap<>();
         this.teamKillCounts = new ConcurrentHashMap<>();
         this.respawnTasks = new ConcurrentHashMap<>();
+        this.reconnectionData = new ConcurrentHashMap<>();
+
+        // Start cleanup task for old reconnection data
+        startReconnectionCleanupTask();
     }
 
     /**
-     * Add a player to a game with automatic team assignment and level loading
+     * Enhanced player addition with proper lobby item management
      */
     public boolean addPlayerToGame(Player player, Arena arena) {
         if (!arena.isEnabled()) {
@@ -75,7 +109,8 @@ public class GameManager {
             player.teleport(arena.getLobbySpawn());
         }
 
-        // Give lobby items
+        // Clear any existing items and give lobby items
+        player.getInventory().clear();
         plugin.getLobbyManager().giveLobbyItems(player);
 
         // Update lobby boss bar
@@ -91,7 +126,7 @@ public class GameManager {
     }
 
     /**
-     * Remove a player from their current game and save their data
+     * Enhanced player removal with proper cleanup
      */
     public void removePlayerFromGame(Player player) {
         CTFPlayer ctfPlayer = players.get(player.getUniqueId());
@@ -142,6 +177,9 @@ public class GameManager {
         // Clear boss bar and scoreboard
         plugin.getMessageManager().clearBossBar(player);
         plugin.getScoreboardManager().clearPlayerScoreboard(player);
+
+        // Update lobby items to server lobby state
+        plugin.getLobbyManager().updatePlayerState(player);
 
         // Update remaining players' boss bars and scoreboards
         if (!game.getPlayers().isEmpty()) {
@@ -195,6 +233,14 @@ public class GameManager {
         int countdownTime = plugin.getConfigManager().getGameplaySetting("pre-game-countdown-seconds", 20);
         game.setTimeLeft(countdownTime);
 
+        // Update lobby items for all players
+        for (CTFPlayer ctfPlayer : game.getPlayers()) {
+            Player player = ctfPlayer.getPlayer();
+            if (player != null && player.isOnline()) {
+                plugin.getLobbyManager().updatePlayerState(player);
+            }
+        }
+
         // Assign players to teams
         assignTeams(game);
 
@@ -233,6 +279,15 @@ public class GameManager {
     private void stopGameCountdown(CTFGame game) {
         game.setState(GameState.WAITING);
         plugin.getMessageManager().updateLobbyBossBar(game);
+        
+        // Update lobby items for all players
+        for (CTFPlayer ctfPlayer : game.getPlayers()) {
+            Player player = ctfPlayer.getPlayer();
+            if (player != null && player.isOnline()) {
+                plugin.getLobbyManager().updatePlayerState(player);
+            }
+        }
+        
         plugin.getLogger().info("Stopped countdown for game in arena: " + game.getArena().getName());
     }
 
@@ -278,6 +333,9 @@ public class GameManager {
                 applyBasicLoadoutToPlayer(player);
                 applyTeamColoredArmor(player, ctfPlayer.getTeam());
                 applySpawnProtection(player);
+                
+                // Update lobby items to playing state
+                plugin.getLobbyManager().updatePlayerState(player);
             }
         }
 
@@ -407,7 +465,7 @@ public class GameManager {
 
         // Building materials
         player.getInventory().setItem(3, new ItemStack(Material.COBBLESTONE, 64));
-        player.getInventory().setItem(4, new ItemStack(Material.WOOD_PLANKS, 32));
+        player.getInventory().setItem(4, new ItemStack(Material.OAK_PLANKS, 32));
     }
 
     /**
@@ -667,6 +725,14 @@ public class GameManager {
         // Show end game statistics
         showCallOfDutyStyleStatistics(game, winner);
 
+        // Update lobby items for all players
+        for (CTFPlayer ctfPlayer : game.getPlayers()) {
+            Player player = ctfPlayer.getPlayer();
+            if (player != null && player.isOnline()) {
+                plugin.getLobbyManager().onPlayerStateChange(player, GameState.PLAYING, GameState.ENDING);
+            }
+        }
+
         // Schedule cleanup
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             cleanupGame(game);
@@ -777,14 +843,43 @@ public class GameManager {
     }
 
     /**
-     * Handle player reconnection
+     * Enhanced player reconnection with proper state restoration
      */
     public void handlePlayerReconnection(Player player) {
-        CTFPlayer ctfPlayer = players.get(player.getUniqueId());
+        UUID playerId = player.getUniqueId();
+        
+        // Check if player was in a game before disconnecting
+        PlayerReconnectionData reconData = reconnectionData.get(playerId);
+        
+        if (reconData != null) {
+            // Player was in a game, attempt to restore
+            Arena arena = plugin.getArenaManager().getArena(reconData.getArenaName());
+            if (arena != null) {
+                CTFGame game = activeGames.get(arena);
+                if (game != null && game.getState() != GameState.ENDING) {
+                    // Restore player to their game
+                    restorePlayerToGame(player, game, reconData);
+                    return;
+                }
+            }
+            
+            // Game no longer exists, clear reconnection data
+            reconnectionData.remove(playerId);
+        }
+        
+        // Check if player is currently in a game (in case they're already tracked)
+        CTFPlayer ctfPlayer = players.get(playerId);
         if (ctfPlayer != null && ctfPlayer.isInGame()) {
             CTFGame game = ctfPlayer.getGame();
+            
+            // Show reconnection message
+            Map<String, String> placeholders = new HashMap<>();
+            placeholders.put("arena", game.getArena().getName());
+            placeholders.put("state", game.getState().toString());
+            player.sendMessage(plugin.getConfigManager().getMessage("reconnected-to-game", placeholders));
 
             if (game.getState() == GameState.PLAYING) {
+                // Restore player to active game
                 teleportToTeamSpawn(player, ctfPlayer);
                 applyBasicLoadoutToPlayer(player);
                 if (ctfPlayer.getTeam() != null) {
@@ -792,25 +887,92 @@ public class GameManager {
                     applyTeamKillEnhancements(player, game, ctfPlayer.getTeam());
                 }
                 applySpawnProtection(player);
+                
+                // Update lobby items
+                plugin.getLobbyManager().onPlayerReconnect(player);
+                
             } else {
+                // Player reconnected to lobby
                 if (game.getArena().getLobbySpawn() != null) {
                     player.teleport(game.getArena().getLobbySpawn());
                 }
-                plugin.getLobbyManager().giveLobbyItems(player);
+                
+                // Update lobby items
+                plugin.getLobbyManager().onPlayerReconnect(player);
             }
 
+            // Update UI elements
             plugin.getScoreboardManager().updatePlayerScoreboard(player);
             plugin.getMessageManager().updateGameTimeBossBar(game);
+            
+        } else {
+            // Player is not in any game, update lobby items
+            plugin.getLobbyManager().onPlayerReconnect(player);
         }
     }
 
     /**
-     * Handle player disconnect
+     * Restore player to their game from reconnection data
+     */
+    private void restorePlayerToGame(Player player, CTFGame game, PlayerReconnectionData reconData) {
+        // Load player data
+        Map<String, Object> playerData = plugin.getPlayerDataManager().loadPlayerData(player.getUniqueId());
+        CTFPlayer ctfPlayer = new CTFPlayer(player, playerData);
+        
+        // Restore team
+        ctfPlayer.setTeam(reconData.getTeam());
+        
+        // Add back to game
+        game.addPlayer(ctfPlayer);
+        players.put(player.getUniqueId(), ctfPlayer);
+        
+        // Show reconnection message
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("arena", game.getArena().getName());
+        placeholders.put("team", reconData.getTeam().getName());
+        player.sendMessage(plugin.getConfigManager().getMessage("reconnected-to-game", placeholders));
+        
+        // Restore based on game state
+        if (game.getState() == GameState.PLAYING) {
+            // Restore to active game
+            teleportToTeamSpawn(player, ctfPlayer);
+            applyBasicLoadoutToPlayer(player);
+            applyTeamColoredArmor(player, ctfPlayer.getTeam());
+            applyTeamKillEnhancements(player, game, ctfPlayer.getTeam());
+            applySpawnProtection(player);
+        } else {
+            // Restore to lobby
+            if (game.getArena().getLobbySpawn() != null) {
+                player.teleport(game.getArena().getLobbySpawn());
+            }
+        }
+        
+        // Update UI
+        plugin.getLobbyManager().onPlayerReconnect(player);
+        plugin.getScoreboardManager().updatePlayerScoreboard(player);
+        plugin.getMessageManager().updateGameTimeBossBar(game);
+        
+        // Clear reconnection data
+        reconnectionData.remove(player.getUniqueId());
+    }
+
+    /**
+     * Handle player disconnect with reconnection data storage
      */
     public void handlePlayerDisconnect(Player player) {
         CTFPlayer ctfPlayer = players.get(player.getUniqueId());
         if (ctfPlayer != null && ctfPlayer.isInGame()) {
             CTFGame game = ctfPlayer.getGame();
+
+            // Store reconnection data
+            PlayerReconnectionData reconData = new PlayerReconnectionData(
+                player.getUniqueId(),
+                game.getArena().getName(),
+                ctfPlayer.getTeam(),
+                game.getState(),
+                ctfPlayer.hasFlag()
+            );
+            reconnectionData.put(player.getUniqueId(), reconData);
 
             if (ctfPlayer.hasFlag()) {
                 CTFFlag flag = ctfPlayer.getCarryingFlag();
@@ -825,6 +987,20 @@ public class GameManager {
 
             plugin.getPlayerDataManager().savePlayerData(ctfPlayer);
         }
+    }
+
+    /**
+     * Start cleanup task for old reconnection data
+     */
+    private void startReconnectionCleanupTask() {
+        plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
+            long currentTime = System.currentTimeMillis();
+            long maxAge = 5 * 60 * 1000; // 5 minutes
+            
+            reconnectionData.entrySet().removeIf(entry -> {
+                return currentTime - entry.getValue().getDisconnectTime() > maxAge;
+            });
+        }, 6000L, 6000L); // Run every 5 minutes
     }
 
     /**
@@ -851,6 +1027,7 @@ public class GameManager {
         teamKillCounts.clear();
         players.clear();
         activeGames.clear();
+        reconnectionData.clear();
     }
 
     // Getters
