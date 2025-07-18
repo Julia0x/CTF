@@ -9,6 +9,7 @@ import org.cwresports.ctfcore.CTFCore;
 import org.cwresports.ctfcore.models.Arena;
 import org.cwresports.ctfcore.models.CTFGame;
 import org.cwresports.ctfcore.models.CTFPlayer;
+import org.cwresports.ctfcore.models.CTFFlag;
 import org.cwresports.ctfcore.models.GameState;
 
 import java.util.HashMap;
@@ -17,21 +18,23 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Enhanced player move listener with automatic flag capture system
- * Handles movement-based events including boundary checks and flag capture
+ * Enhanced player move listener with instant capture and instant flag break systems
+ * Handles movement-based events including boundary checks, flag capture, and flag taking
  */
 public class PlayerMoveListener implements Listener {
 
     private final CTFCore plugin;
     private final Map<UUID, CaptureAttempt> activeCaptureAttempts;
+    private final Map<UUID, Long> lastFlagTakeAttempt;
 
     public PlayerMoveListener(CTFCore plugin) {
         this.plugin = plugin;
         this.activeCaptureAttempts = new ConcurrentHashMap<>();
+        this.lastFlagTakeAttempt = new ConcurrentHashMap<>();
     }
 
     /**
-     * Represents an active capture attempt for automatic flag capture
+     * Represents an active capture attempt for timed flag capture
      */
     private static class CaptureAttempt {
         private final Player player;
@@ -104,7 +107,12 @@ public class PlayerMoveListener implements Listener {
             handleAutomaticFlagCapture(event, ctfPlayer, game);
         }
 
-        // Handle active capture attempts
+        // Handle instant flag break system
+        if (plugin.getConfigManager().getMainConfig().getBoolean("flag-capture.instant-break", false)) {
+            handleInstantFlagBreak(event, ctfPlayer, game);
+        }
+
+        // Handle active capture attempts (for timed capture)
         handleActiveCaptureAttempts(player);
     }
 
@@ -127,15 +135,37 @@ public class PlayerMoveListener implements Listener {
 
         double captureRadius = plugin.getConfigManager().getMainConfig().getDouble("flag-capture.automatic-radius", 2.0);
         Location capturePoint = teamData.getCapturePoint();
+        boolean instantCapture = plugin.getConfigManager().getMainConfig().getBoolean("flag-capture.instant-capture", false);
 
         // Check if player is within capture radius
         if (playerLocation.distance(capturePoint) <= captureRadius) {
             UUID playerId = ctfPlayer.getPlayer().getUniqueId();
             
-            // Check if player already has an active capture attempt
-            if (!activeCaptureAttempts.containsKey(playerId)) {
-                // Start new capture attempt
-                startAutomaticCaptureAttempt(ctfPlayer, game, capturePoint);
+            if (instantCapture) {
+                // Instant capture - no delay
+                boolean success = game.captureFlag(ctfPlayer);
+                if (success) {
+                    player.playSound(player.getLocation(), 
+                                   plugin.getConfigManager().getSound("flag_captured"), 1.0f, 1.0f);
+                    
+                    // Show instant capture title
+                    Map<String, String> placeholders = new HashMap<>();
+                    placeholders.put("team_name", ctfPlayer.getTeam().getName().toUpperCase());
+                    
+                    String title = "§a§lFLAG CAPTURED!";
+                    String subtitle = "§e§l" + ctfPlayer.getTeam().getColorCode() + ctfPlayer.getTeam().getName().toUpperCase() + " TEAM";
+                    
+                    ctfPlayer.getPlayer().sendTitle(title, subtitle, 10, 40, 10);
+                    
+                    plugin.getLogger().info("Player " + ctfPlayer.getPlayer().getName() + " instantly captured flag");
+                }
+                
+            } else {
+                // Timed capture - check if player already has an active capture attempt
+                if (!activeCaptureAttempts.containsKey(playerId)) {
+                    // Start new capture attempt
+                    startAutomaticCaptureAttempt(ctfPlayer, game, capturePoint);
+                }
             }
         } else {
             // Player moved out of capture area, cancel any active attempt
@@ -144,7 +174,97 @@ public class PlayerMoveListener implements Listener {
     }
 
     /**
-     * Start automatic capture attempt
+     * Handle instant flag break system
+     */
+    private void handleInstantFlagBreak(PlayerMoveEvent event, CTFPlayer ctfPlayer, CTFGame game) {
+        // Only process if player doesn't have a flag
+        if (ctfPlayer.hasFlag() || ctfPlayer.getTeam() == null) {
+            return;
+        }
+
+        Location playerLocation = event.getTo();
+        Arena arena = game.getArena();
+        UUID playerId = ctfPlayer.getPlayer().getUniqueId();
+
+        // Prevent spam by checking time since last attempt
+        Long lastAttempt = lastFlagTakeAttempt.get(playerId);
+        if (lastAttempt != null && System.currentTimeMillis() - lastAttempt < 500) {
+            return; // 500ms cooldown
+        }
+
+        // Check all enemy flags
+        for (Arena.TeamColor teamColor : Arena.TeamColor.values()) {
+            if (teamColor == ctfPlayer.getTeam()) continue; // Skip own team
+
+            CTFFlag flag = game.getFlag(teamColor);
+            if (flag == null) continue;
+
+            Arena.Team enemyTeamData = arena.getTeam(teamColor);
+            Location flagLocation = null;
+
+            // Check if flag is at base
+            if (flag.isAtBase() && enemyTeamData.getFlagLocation() != null) {
+                flagLocation = enemyTeamData.getFlagLocation();
+            }
+            // Check if flag is dropped
+            else if (flag.isDropped() && flag.getCurrentLocation() != null) {
+                flagLocation = flag.getCurrentLocation();
+            }
+
+            if (flagLocation != null && playerLocation.distance(flagLocation) <= 2.0) {
+                // Instant flag take
+                boolean success = game.takeFlag(ctfPlayer, teamColor);
+                if (success) {
+                    ctfPlayer.getPlayer().playSound(ctfPlayer.getPlayer().getLocation(),
+                                                   plugin.getConfigManager().getSound("flag_taken"), 1.0f, 1.0f);
+                    
+                    // Show instant take title
+                    String title = "§e§lFLAG TAKEN!";
+                    String subtitle = "§a§l" + teamColor.getColorCode() + teamColor.getName().toUpperCase() + " FLAG";
+                    
+                    ctfPlayer.getPlayer().sendTitle(title, subtitle, 10, 30, 10);
+                    
+                    plugin.getLogger().info("Player " + ctfPlayer.getPlayer().getName() + " instantly took " + teamColor.getName() + " flag");
+                    
+                    // Update last attempt time
+                    lastFlagTakeAttempt.put(playerId, System.currentTimeMillis());
+                }
+                break; // Only take one flag at a time
+            }
+        }
+
+        // Also handle instant flag return for own team's dropped flag
+        CTFFlag ownFlag = game.getFlag(ctfPlayer.getTeam());
+        if (ownFlag != null && ownFlag.isDropped() && ownFlag.getCurrentLocation() != null) {
+            if (playerLocation.distance(ownFlag.getCurrentLocation()) <= 2.0) {
+                // Instant flag return
+                ownFlag.returnToBase();
+                ctfPlayer.addFlagReturn();
+
+                Map<String, String> placeholders = new HashMap<>();
+                placeholders.put("player", ctfPlayer.getPlayer().getName());
+                placeholders.put("team_color", ctfPlayer.getTeam().getColorCode());
+
+                game.broadcastMessage("flag-returned-clean", placeholders);
+                ctfPlayer.getPlayer().playSound(ctfPlayer.getPlayer().getLocation(),
+                                               plugin.getConfigManager().getSound("flag_returned"), 1.0f, 1.0f);
+
+                // Show instant return title
+                String title = "§b§lFLAG RETURNED!";
+                String subtitle = "§a§l" + ctfPlayer.getTeam().getColorCode() + ctfPlayer.getTeam().getName().toUpperCase() + " FLAG";
+                
+                ctfPlayer.getPlayer().sendTitle(title, subtitle, 10, 30, 10);
+                
+                plugin.getLogger().info("Player " + ctfPlayer.getPlayer().getName() + " instantly returned own flag");
+                
+                // Update last attempt time
+                lastFlagTakeAttempt.put(playerId, System.currentTimeMillis());
+            }
+        }
+    }
+
+    /**
+     * Start automatic capture attempt (for timed capture)
      */
     private void startAutomaticCaptureAttempt(CTFPlayer ctfPlayer, CTFGame game, Location capturePoint) {
         Player player = ctfPlayer.getPlayer();
@@ -315,12 +435,14 @@ public class PlayerMoveListener implements Listener {
      */
     public void cleanupPlayer(Player player) {
         activeCaptureAttempts.remove(player.getUniqueId());
+        lastFlagTakeAttempt.remove(player.getUniqueId());
     }
 
     /**
-     * Clean up all capture attempts
+     * Clean up all capture attempts and flag take attempts
      */
     public void cleanup() {
         activeCaptureAttempts.clear();
+        lastFlagTakeAttempt.clear();
     }
 }
