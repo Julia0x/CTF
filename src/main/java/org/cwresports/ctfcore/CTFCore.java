@@ -12,6 +12,7 @@ import org.cwresports.ctfcore.placeholders.CTFPlaceholderExpansion;
 /**
  * Main plugin class for CTF-Core
  * Complete Capture the Flag gamemode for Paper 1.21+
+ * Enhanced with comprehensive block tracking, improved respawn system, and advanced color processing
  *
  * @author CWReSports
  * @version 1.0.0
@@ -25,6 +26,7 @@ public class CTFCore extends JavaPlugin {
     private ArenaManager arenaManager;
     private GameManager gameManager;
     private PlayerDataManager playerDataManager;
+    private BlockTrackingManager blockTrackingManager; // **NEW ENHANCED FEATURE**
 
     private WorldGuardManager worldGuardManager;
     private ScoreboardManager scoreboardManager;
@@ -78,6 +80,13 @@ public class CTFCore extends JavaPlugin {
         getLogger().info("Version: " + getDescription().getVersion());
         getLogger().info("Loaded " + arenaManager.getEnabledArenas().size() + " enabled arenas.");
 
+        // Log enhanced features
+        getLogger().info("Enhanced features enabled:");
+        getLogger().info("  ✓ Block tracking and restoration system");
+        getLogger().info("  ✓ Improved respawn system with immediate arena teleportation");
+        getLogger().info("  ✓ Advanced color code processing");
+        getLogger().info("  ✓ Enhanced spawn protection with attack-based removal");
+
         // Log currency system status
         if (currencyManager.isEnabled()) {
             getLogger().info("Currency system enabled with Vault integration.");
@@ -90,12 +99,22 @@ public class CTFCore extends JavaPlugin {
     public void onDisable() {
         getLogger().info("Shutting down CTF-Core...");
 
-        // ENHANCED: End all games gracefully to prevent issues on restart
+        // **ENHANCED FEATURE: Emergency block cleanup before shutdown**
+        if (blockTrackingManager != null) {
+            try {
+                getLogger().info("Performing emergency block cleanup...");
+                blockTrackingManager.emergencyCleanup();
+            } catch (Exception e) {
+                getLogger().warning("Could not perform emergency block cleanup: " + e.getMessage());
+            }
+        }
+
+        // End all games gracefully
         if (gameManager != null) {
             try {
                 getLogger().info("Ending all active games...");
                 gameManager.endAllGames();
-                gameManager.cleanup(); // Add cleanup method
+                gameManager.cleanup();
             } catch (Exception e) {
                 getLogger().warning("Could not end games properly: " + e.getMessage());
             }
@@ -116,81 +135,22 @@ public class CTFCore extends JavaPlugin {
             }
         }
 
-        // ENHANCED: Save arenas and clean up properly
+        // Save arenas and clean up properly
         if (arenaManager != null) {
             try {
                 getLogger().info("Saving arena configurations...");
                 arenaManager.saveArenas();
+                arenaManager.clearAllSetupModes();
             } catch (Exception e) {
                 getLogger().warning("Could not save arenas on disable: " + e.getMessage());
             }
         }
 
-        // Clear temporary setup modes
-        if (arenaManager != null) {
-            arenaManager.clearAllSetupModes();
-        }
+        // Shutdown all managers
+        shutdownManagers();
 
-        // Shutdown scoreboard manager
-        if (scoreboardManager != null) {
-            try {
-                scoreboardManager.shutdown();
-            } catch (Exception e) {
-                getLogger().warning("Could not shutdown scoreboard manager: " + e.getMessage());
-            }
-        }
-
-        // Shutdown message manager
-        if (messageManager != null) {
-            try {
-                messageManager.shutdown();
-            } catch (Exception e) {
-                getLogger().warning("Could not shutdown message manager: " + e.getMessage());
-            }
-        }
-
-        // ENHANCED: Shutdown power-up manager
-        if (powerUpManager != null) {
-            try {
-                powerUpManager.cleanup();
-            } catch (Exception e) {
-                getLogger().warning("Could not shutdown power-up manager: " + e.getMessage());
-            }
-        }
-
-        // ENHANCED: Shutdown tab list manager
-        if (tabListManager != null) {
-            try {
-                tabListManager.shutdown();
-            } catch (Exception e) {
-                getLogger().warning("Could not shutdown tab list manager: " + e.getMessage());
-            }
-        }
-
-        // ENHANCED: Shutdown hologram leaderboard manager
-        if (hologramLeaderboardManager != null) {
-            try {
-                hologramLeaderboardManager.cleanup();
-            } catch (Exception e) {
-                getLogger().warning("Could not shutdown hologram leaderboard manager: " + e.getMessage());
-            }
-        }
-
-        // ENHANCED: Clear all player data to prevent memory leaks
-        try {
-            getLogger().info("Cleaning up player data...");
-            for (org.bukkit.entity.Player player : getServer().getOnlinePlayers()) {
-                // Reset player inventories and states
-                player.getInventory().clear();
-                player.setHealth(20.0);
-                player.setFoodLevel(20);
-                player.setFireTicks(0);
-                player.getActivePotionEffects().forEach(effect ->
-                        player.removePotionEffect(effect.getType()));
-            }
-        } catch (Exception e) {
-            getLogger().warning("Could not clean up player data: " + e.getMessage());
-        }
+        // Clean up player data
+        cleanupPlayerData();
 
         getLogger().info("CTF-Core has been disabled successfully.");
     }
@@ -220,10 +180,13 @@ public class CTFCore extends JavaPlugin {
         configManager = new ConfigManager(this);
         configManager.loadAll();
 
-        // Then initialize other managers that don't depend on config
+        // Then initialize core managers
         worldGuardManager = new WorldGuardManager();
         playerDataManager = new PlayerDataManager(this);
         currencyManager = new CurrencyManager(this);
+        
+        // **ENHANCED FEATURE: Initialize block tracking manager**
+        blockTrackingManager = new BlockTrackingManager(this);
 
         // Initialize managers that depend on config
         arenaManager = new ArenaManager(this);
@@ -265,12 +228,84 @@ public class CTFCore extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerDeathListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerDamageListener(this), this);
         getServer().getPluginManager().registerEvents(new BlockBreakListener(this), this);
+        getServer().getPluginManager().registerEvents(new BlockPlaceListener(this), this); // **NEW ENHANCED FEATURE**
         getServer().getPluginManager().registerEvents(new PlayerInteractListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerRespawnListener(this), this);
         getServer().getPluginManager().registerEvents(new InventoryClickListener(this), this);
         getServer().getPluginManager().registerEvents(new ChatListener(this), this);
 
         getLogger().info("Event listeners registered successfully.");
+    }
+
+    /**
+     * Shutdown all managers properly
+     */
+    private void shutdownManagers() {
+        // Shutdown scoreboard manager
+        if (scoreboardManager != null) {
+            try {
+                scoreboardManager.shutdown();
+            } catch (Exception e) {
+                getLogger().warning("Could not shutdown scoreboard manager: " + e.getMessage());
+            }
+        }
+
+        // Shutdown message manager
+        if (messageManager != null) {
+            try {
+                messageManager.shutdown();
+            } catch (Exception e) {
+                getLogger().warning("Could not shutdown message manager: " + e.getMessage());
+            }
+        }
+
+        // Shutdown power-up manager
+        if (powerUpManager != null) {
+            try {
+                powerUpManager.cleanup();
+            } catch (Exception e) {
+                getLogger().warning("Could not shutdown power-up manager: " + e.getMessage());
+            }
+        }
+
+        // Shutdown tab list manager
+        if (tabListManager != null) {
+            try {
+                tabListManager.shutdown();
+            } catch (Exception e) {
+                getLogger().warning("Could not shutdown tab list manager: " + e.getMessage());
+            }
+        }
+
+        // Shutdown hologram leaderboard manager
+        if (hologramLeaderboardManager != null) {
+            try {
+                hologramLeaderboardManager.cleanup();
+            } catch (Exception e) {
+                getLogger().warning("Could not shutdown hologram leaderboard manager: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Clean up player data
+     */
+    private void cleanupPlayerData() {
+        try {
+            getLogger().info("Cleaning up player data...");
+            for (org.bukkit.entity.Player player : getServer().getOnlinePlayers()) {
+                // Reset player inventories and states
+                player.getInventory().clear();
+                player.setHealth(20.0);
+                player.setFoodLevel(20);
+                player.setFireTicks(0);
+                player.setGlowing(false);
+                player.getActivePotionEffects().forEach(effect ->
+                        player.removePotionEffect(effect.getType()));
+            }
+        } catch (Exception e) {
+            getLogger().warning("Could not clean up player data: " + e.getMessage());
+        }
     }
 
     /**
@@ -388,6 +423,13 @@ public class CTFCore extends JavaPlugin {
 
     public HologramLeaderboardManager getHologramLeaderboardManager() {
         return hologramLeaderboardManager;
+    }
+
+    /**
+     * **NEW ENHANCED FEATURE: Get block tracking manager**
+     */
+    public BlockTrackingManager getBlockTrackingManager() {
+        return blockTrackingManager;
     }
 
     public boolean isPlaceholderAPIEnabled() {
