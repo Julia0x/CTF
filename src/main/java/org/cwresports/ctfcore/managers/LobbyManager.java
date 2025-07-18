@@ -226,7 +226,14 @@ public class LobbyManager {
             ItemStack item = player.getInventory().getItem(i);
             if (item != null && item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
                 String displayName = item.getItemMeta().getDisplayName();
+                
+                // Check for leave game items
                 if (displayName.equals("§c§lLeave Game") || displayName.equals("§c§lLeave to Lobby")) {
+                    player.getInventory().setItem(i, null);
+                }
+                
+                // Check for autojoin items
+                if (plugin.getAutojoinManager().isAutojoinItem(item)) {
                     player.getInventory().setItem(i, null);
                 }
             }
