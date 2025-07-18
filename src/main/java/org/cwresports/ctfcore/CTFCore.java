@@ -374,6 +374,10 @@ public class CTFCore extends JavaPlugin {
         return configManager;
     }
 
+    public ConfigMigrationManager getConfigMigrationManager() {
+        return configMigrationManager;
+    }
+
     public ArenaManager getArenaManager() {
         return arenaManager;
     }
@@ -400,6 +404,10 @@ public class CTFCore extends JavaPlugin {
 
     public ServerLobbyManager getServerLobbyManager() {
         return serverLobbyManager;
+    }
+
+    public AutojoinManager getAutojoinManager() {
+        return autojoinManager;
     }
 
     public MessageManager getMessageManager() {
