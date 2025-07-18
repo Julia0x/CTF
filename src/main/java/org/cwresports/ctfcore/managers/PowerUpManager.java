@@ -21,8 +21,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * Enhanced power-up manager with improved spawning and collection system
  * Manages power-ups that spawn randomly during CTF games
- * Power-ups provide temporary advantages to players
  */
 public class PowerUpManager {
 
@@ -35,15 +35,15 @@ public class PowerUpManager {
         SPEED_BOOST("§e⚡ Speed Boost", Material.SUGAR,
                 new PotionEffect(PotionEffectType.SPEED, 300, 2)), // 15 seconds Speed III
         STRENGTH("§c⚔ Strength", Material.BLAZE_POWDER,
-                new PotionEffect(PotionEffectType.STRENGTH, 200, 1)), // 10 seconds Strength II
+                new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 200, 1)), // 10 seconds Strength II
         REGENERATION("§a❤ Regeneration", Material.GHAST_TEAR,
                 new PotionEffect(PotionEffectType.REGENERATION, 100, 2)), // 5 seconds Regen III
         JUMP_BOOST("§b↑ Jump Boost", Material.RABBIT_FOOT,
-                new PotionEffect(PotionEffectType.JUMP_BOOST, 400, 2)), // 20 seconds Jump III
+                new PotionEffect(PotionEffectType.JUMP, 400, 2)), // 20 seconds Jump III
         INVISIBILITY("§8⚹ Invisibility", Material.FERMENTED_SPIDER_EYE,
                 new PotionEffect(PotionEffectType.INVISIBILITY, 60, 0)), // 3 seconds Invisibility
         RESISTANCE("§7⛨ Resistance", Material.IRON_INGOT,
-                new PotionEffect(PotionEffectType.RESISTANCE, 200, 1)); // 10 seconds Resistance II
+                new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 1)); // 10 seconds Resistance II
 
         private final String displayName;
         private final Material material;
@@ -83,8 +83,10 @@ public class PowerUpManager {
             // Set item in hand
             ItemStack item = new ItemStack(type.getMaterial());
             ItemMeta meta = item.getItemMeta();
-            meta.setDisplayName(type.getDisplayName());
-            item.setItemMeta(meta);
+            if (meta != null) {
+                meta.setDisplayName(type.getDisplayName());
+                item.setItemMeta(meta);
+            }
             armorStand.setItemInHand(item);
 
             // Start particle effect
@@ -105,7 +107,7 @@ public class PowerUpManager {
                         double z = Math.sin(angle + i * 2 * Math.PI / 3) * 1.5;
                         Location particleLoc = center.clone().add(x, 0, z);
 
-                        center.getWorld().spawnParticle(Particle.ENCHANT, particleLoc, 5, 0.1, 0.1, 0.1, 0);
+                        center.getWorld().spawnParticle(Particle.ENCHANTMENT_TABLE, particleLoc, 5, 0.1, 0.1, 0.1, 0);
                     }
 
                     // Floating effect
@@ -140,10 +142,10 @@ public class PowerUpManager {
 
             // Play effects
             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.5f);
-            player.getWorld().spawnParticle(Particle.FIREWORK, player.getLocation().add(0, 1, 0),
+            player.getWorld().spawnParticle(Particle.FIREWORKS_SPARK, player.getLocation().add(0, 1, 0),
                     30, 1, 1, 1, 0.1);
 
-            // Send message via action bar instead of boss bar
+            // Send message via action bar
             Map<String, String> placeholders = new HashMap<>();
             placeholders.put("powerup", type.getDisplayName());
             String message = plugin.getConfigManager().getMessage("powerup-collected", placeholders);
@@ -169,6 +171,8 @@ public class PowerUpManager {
      */
     public void addPowerupSpawnPoint(Arena arena, Location location) {
         powerupSpawnPoints.computeIfAbsent(arena, k -> new ArrayList<>()).add(location.clone());
+        plugin.getLogger().info("Added powerup spawn point for arena " + arena.getName() + " at " + 
+                               location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ());
     }
 
     /**
@@ -194,7 +198,7 @@ public class PowerUpManager {
     }
 
     /**
-     * Start power-up spawning for a game
+     * Enhanced start power-up spawning for a game
      */
     public void startPowerUpSpawning(CTFGame game) {
         if (spawnTasks.containsKey(game)) {
@@ -202,12 +206,22 @@ public class PowerUpManager {
         }
 
         activePowerUps.put(game, new ArrayList<>());
+        
+        plugin.getLogger().info("Starting power-up spawning for arena: " + game.getArena().getName());
 
-        // Spawn power-ups every 30-60 seconds randomly
+        // Spawn first power-up after 30 seconds
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+            if (game.getState() == org.cwresports.ctfcore.models.GameState.PLAYING) {
+                spawnRandomPowerUp(game);
+            }
+        }, 600L); // 30 seconds
+
+        // Then spawn power-ups every 45-75 seconds randomly
         BukkitTask task = new BukkitRunnable() {
             @Override
             public void run() {
                 if (game.getState() != org.cwresports.ctfcore.models.GameState.PLAYING) {
+                    plugin.getLogger().info("Stopping power-up spawning for arena: " + game.getArena().getName() + " (game not playing)");
                     cancel();
                     spawnTasks.remove(game);
                     return;
@@ -215,7 +229,7 @@ public class PowerUpManager {
 
                 spawnRandomPowerUp(game);
             }
-        }.runTaskTimer(plugin, 600L, 600L + new Random().nextInt(600)); // 30-60 seconds
+        }.runTaskTimer(plugin, 900L, 900L + new Random().nextInt(600)); // 45-75 seconds
 
         spawnTasks.put(game, task);
     }
@@ -224,6 +238,8 @@ public class PowerUpManager {
      * Stop power-up spawning and clean up for a game
      */
     public void stopPowerUpSpawning(CTFGame game) {
+        plugin.getLogger().info("Stopping power-up spawning for arena: " + game.getArena().getName());
+        
         BukkitTask task = spawnTasks.remove(game);
         if (task != null) {
             task.cancel();
@@ -238,19 +254,26 @@ public class PowerUpManager {
     }
 
     /**
-     * Spawn a random power-up at a configured spawn point
+     * Enhanced spawn random power-up method
      */
     private void spawnRandomPowerUp(CTFGame game) {
         Arena arena = game.getArena();
         List<PowerUp> powerUps = activePowerUps.get(game);
 
-        if (powerUps == null || powerUps.size() >= 3) {
+        if (powerUps == null) {
+            plugin.getLogger().warning("No power-up list found for arena: " + arena.getName());
+            return;
+        }
+
+        if (powerUps.size() >= 3) {
+            plugin.getLogger().info("Max power-ups reached for arena: " + arena.getName());
             return; // Max 3 power-ups at once
         }
 
-        // Get random spawn location from configured spawn points
+        // Get random spawn location
         Location spawnLoc = getRandomPowerUpLocation(arena);
         if (spawnLoc == null) {
+            plugin.getLogger().warning("No valid spawn location found for power-up in arena: " + arena.getName());
             return;
         }
 
@@ -262,7 +285,10 @@ public class PowerUpManager {
         PowerUp powerUp = new PowerUp(randomType, spawnLoc, plugin);
         powerUps.add(powerUp);
 
-        // Announce to all players via action bar instead of boss bar
+        plugin.getLogger().info("Spawned power-up " + randomType.getDisplayName() + " at " + 
+                               spawnLoc.getBlockX() + "," + spawnLoc.getBlockY() + "," + spawnLoc.getBlockZ());
+
+        // Announce to all players via action bar
         Map<String, String> placeholders = new HashMap<>();
         placeholders.put("powerup", randomType.getDisplayName());
         String message = plugin.getConfigManager().getMessage("powerup-spawned", placeholders);
@@ -276,40 +302,66 @@ public class PowerUpManager {
             }
         }
 
-        // Auto-remove after 30 seconds if not collected
+        // Auto-remove after 60 seconds if not collected
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             if (powerUps.contains(powerUp)) {
                 powerUp.remove();
                 powerUps.remove(powerUp);
+                plugin.getLogger().info("Auto-removed uncollected power-up " + randomType.getDisplayName());
             }
-        }, 600L);
+        }, 1200L); // 60 seconds
     }
 
     /**
-     * Get a random location for power-up spawning from configured spawn points
+     * Enhanced get random location method with better fallback
      */
     private Location getRandomPowerUpLocation(Arena arena) {
         List<Location> spawnPoints = powerupSpawnPoints.get(arena);
         
-        if (spawnPoints == null || spawnPoints.isEmpty()) {
-            // Fallback to old method if no spawn points configured
-            return getRandomPowerUpLocationFallback(arena);
+        if (spawnPoints != null && !spawnPoints.isEmpty()) {
+            // Use configured spawn points
+            Random random = new Random();
+            Location chosen = spawnPoints.get(random.nextInt(spawnPoints.size())).clone();
+            plugin.getLogger().info("Using configured spawn point for arena: " + arena.getName());
+            return chosen;
         }
 
-        // Return random spawn point
-        Random random = new Random();
-        return spawnPoints.get(random.nextInt(spawnPoints.size())).clone();
+        // Fallback to calculated location
+        plugin.getLogger().info("Using fallback spawn calculation for arena: " + arena.getName());
+        return getRandomPowerUpLocationFallback(arena);
     }
 
     /**
-     * Fallback method for power-up spawning when no spawn points are configured
+     * Enhanced fallback method for power-up spawning
      */
     private Location getRandomPowerUpLocationFallback(Arena arena) {
+        // Try to use arena center if available
+        if (arena.getBoundaryMin() != null && arena.getBoundaryMax() != null) {
+            Location min = arena.getBoundaryMin();
+            Location max = arena.getBoundaryMax();
+            
+            Random random = new Random();
+            double x = min.getX() + random.nextDouble() * (max.getX() - min.getX());
+            double z = min.getZ() + random.nextDouble() * (max.getZ() - min.getZ());
+            double y = Math.max(min.getY(), max.getY()) + 1;
+            
+            Location spawnLoc = new Location(min.getWorld(), x, y, z);
+            
+            // Find safe Y coordinate
+            while (spawnLoc.getBlock().getType().isSolid() && spawnLoc.getY() < 255) {
+                spawnLoc.add(0, 1, 0);
+            }
+            
+            plugin.getLogger().info("Generated fallback spawn location using arena boundaries");
+            return spawnLoc;
+        }
+
         // Get center point between red and blue flag locations
         Arena.Team redTeam = arena.getTeam(Arena.TeamColor.RED);
         Arena.Team blueTeam = arena.getTeam(Arena.TeamColor.BLUE);
 
         if (redTeam.getFlagLocation() == null || blueTeam.getFlagLocation() == null) {
+            plugin.getLogger().warning("Cannot generate fallback spawn location - missing flag locations");
             return null;
         }
 
@@ -319,7 +371,7 @@ public class PowerUpManager {
         // Calculate center point
         double centerX = (redFlag.getX() + blueFlag.getX()) / 2;
         double centerZ = (redFlag.getZ() + blueFlag.getZ()) / 2;
-        double centerY = Math.max(redFlag.getY(), blueFlag.getY());
+        double centerY = Math.max(redFlag.getY(), blueFlag.getY()) + 1;
 
         // Add some randomness around the center
         Random random = new Random();
@@ -333,6 +385,7 @@ public class PowerUpManager {
             spawnLoc.add(0, 1, 0);
         }
 
+        plugin.getLogger().info("Generated fallback spawn location using flag positions");
         return spawnLoc;
     }
 
@@ -351,15 +404,38 @@ public class PowerUpManager {
             if (powerUp.isNear(player, 2.0)) { // 2 block radius
                 powerUp.collect(player, plugin);
                 iterator.remove();
+                plugin.getLogger().info("Player " + player.getName() + " collected power-up " + powerUp.getType().getDisplayName());
                 break; // Only collect one at a time
             }
         }
     }
 
     /**
-     * Cleanup method for plugin disable
+     * Get debug information about power-up spawning
+     */
+    public Map<String, Object> getDebugInfo(Arena arena) {
+        Map<String, Object> info = new HashMap<>();
+        info.put("configured_spawn_points", getPowerupSpawnCount(arena));
+        info.put("has_boundaries", arena.getBoundaryMin() != null && arena.getBoundaryMax() != null);
+        info.put("has_flag_locations", 
+                arena.getTeam(Arena.TeamColor.RED).getFlagLocation() != null &&
+                arena.getTeam(Arena.TeamColor.BLUE).getFlagLocation() != null);
+        
+        CTFGame game = plugin.getGameManager().getGame(arena);
+        if (game != null) {
+            info.put("active_powerups", activePowerUps.getOrDefault(game, new ArrayList<>()).size());
+            info.put("spawn_task_active", spawnTasks.containsKey(game));
+        }
+        
+        return info;
+    }
+
+    /**
+     * Enhanced cleanup method
      */
     public void cleanup() {
+        plugin.getLogger().info("Cleaning up PowerUpManager...");
+        
         for (BukkitTask task : spawnTasks.values()) {
             task.cancel();
         }
@@ -372,6 +448,8 @@ public class PowerUpManager {
         }
         activePowerUps.clear();
         powerupSpawnPoints.clear();
+        
+        plugin.getLogger().info("PowerUpManager cleanup complete");
     }
 
     /**
