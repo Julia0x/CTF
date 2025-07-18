@@ -99,9 +99,21 @@ public class LobbyManager {
      * Give server lobby items (not in any game)
      */
     private void giveServerLobbyItems(Player player) {
-        // Could add server lobby specific items here
-        // For now, we'll clear the inventory and let the player choose games
-        player.getInventory().clear();
+        // Check if server lobby items are enabled
+        if (!plugin.getConfigManager().getMainConfig().getBoolean("server-lobby.give-items", true)) {
+            return;
+        }
+
+        // Clear inventory if configured
+        if (plugin.getConfigManager().getMainConfig().getBoolean("server-lobby.clear-inventory", true)) {
+            player.getInventory().clear();
+        }
+
+        // Give autojoin item if enabled
+        if (plugin.getConfigManager().getMainConfig().getBoolean("autojoin.enabled", true)) {
+            ItemStack autojoinItem = plugin.getAutojoinManager().createAutojoinItem();
+            player.getInventory().setItem(4, autojoinItem); // Middle slot
+        }
     }
     
     /**
