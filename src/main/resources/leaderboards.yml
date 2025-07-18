@@ -1,6 +1,9 @@
 # CTF-Core Hologram Leaderboards Configuration
 # This file manages hologram leaderboard settings and data
 
+# Configuration version - DO NOT MODIFY
+config-version: "1.1.0"
+
 # Global settings for leaderboards
 settings:
   # How often to update leaderboards (in seconds)
