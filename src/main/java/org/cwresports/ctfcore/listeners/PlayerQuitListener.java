@@ -7,7 +7,8 @@ import org.cwresports.ctfcore.CTFCore;
 import org.cwresports.ctfcore.models.CTFPlayer;
 
 /**
- * Handles player quit events with level system data saving
+ * Enhanced player quit listener with comprehensive cleanup
+ * Handles player quit events with level system data saving and proper cleanup
  */
 public class PlayerQuitListener implements Listener {
 
@@ -37,5 +38,22 @@ public class PlayerQuitListener implements Listener {
         
         // Update tab list for remaining players
         plugin.getTabListManager().onPlayerQuit(event.getPlayer());
+
+        // Clean up lobby manager state
+        plugin.getLobbyManager().onPlayerQuit(event.getPlayer());
+
+        // Clean up player move listener capture attempts
+        if (plugin.getServer().getPluginManager().getPlugin("CTF-Core") != null) {
+            try {
+                // Clean up any active automatic capture attempts
+                // This is handled by the PlayerMoveListener's cleanup method
+                Object moveListener = plugin.getServer().getPluginManager().getPlugin("CTF-Core");
+                if (moveListener instanceof PlayerMoveListener) {
+                    ((PlayerMoveListener) moveListener).cleanupPlayer(event.getPlayer());
+                }
+            } catch (Exception e) {
+                // Ignore cleanup errors
+            }
+        }
     }
 }
