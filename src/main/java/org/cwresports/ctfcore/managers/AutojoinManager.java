@@ -184,7 +184,7 @@ public class AutojoinManager {
      * Get count of players waiting in arena
      */
     private int getWaitingPlayerCount(Arena arena) {
-        CTFGame game = plugin.getGameManager().getGame(arena.getName());
+        CTFGame game = plugin.getGameManager().getGame(arena);
         if (game == null) {
             return 0;
         }
