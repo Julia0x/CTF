@@ -177,7 +177,7 @@ public class AutojoinManager {
         }
 
         return (game.getState() == GameState.WAITING || game.getState() == GameState.STARTING) 
-               && game.getPlayers().size() < game.getArena().getMaxPlayers();
+               && game.getPlayers().size() < plugin.getConfigManager().getGameplaySetting("max-players-per-arena", 8);
     }
 
     /**
