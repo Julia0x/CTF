@@ -205,7 +205,7 @@ public class AutojoinManager {
 
         try {
             // Attempt to join the game
-            boolean success = plugin.getGameManager().joinGame(player, arena.getName());
+            boolean success = plugin.getGameManager().addPlayerToGame(player, arena);
             
             if (success) {
                 // Send appropriate message based on game state
