@@ -10,6 +10,7 @@ import org.cwresports.ctfcore.models.CTFPlayer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Manages chat formatting with level, rank integration, and arena isolation
@@ -70,7 +71,7 @@ public class ChatManager {
     private void sendGlobalMessage(Player player, String message) {
         String template = "&7[GLOBAL] " + plugin.getConfigManager().getScoreboards().getString("chat.format",
                 "&7[{level}] {luckperms_prefix}{team_prefix}{player}{luckperms_suffix}: &f{message}");
-        
+
         String formatted = formatMessage(player, message, template);
         Bukkit.broadcastMessage(formatted);
     }
@@ -140,7 +141,7 @@ public class ChatManager {
      */
     private String formatMessage(Player player, String message, String template) {
         CTFPlayer ctfPlayer = plugin.getGameManager().getCTFPlayer(player);
-        
+
         // Always get fresh level data to avoid caching issues
         int level = 1;
         if (ctfPlayer != null) {
@@ -209,7 +210,7 @@ public class ChatManager {
      */
     public void sendChatHelp(Player player) {
         boolean arenaIsolation = plugin.getConfigManager().getScoreboards().getBoolean("chat.arena-isolation", true);
-        
+
         if (!arenaIsolation) {
             player.sendMessage("§7Chat isolation is disabled. All messages are global.");
             return;

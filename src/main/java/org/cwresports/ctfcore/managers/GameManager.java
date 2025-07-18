@@ -40,8 +40,8 @@ public class GameManager {
         private final boolean hadFlag;
         private final long disconnectTime;
 
-        public PlayerReconnectionData(UUID playerId, String arenaName, Arena.TeamColor team, 
-                                    GameState gameState, boolean hadFlag) {
+        public PlayerReconnectionData(UUID playerId, String arenaName, Arena.TeamColor team,
+                                      GameState gameState, boolean hadFlag) {
             this.playerId = playerId;
             this.arenaName = arenaName;
             this.team = team;
@@ -279,7 +279,7 @@ public class GameManager {
     private void stopGameCountdown(CTFGame game) {
         game.setState(GameState.WAITING);
         plugin.getMessageManager().updateLobbyBossBar(game);
-        
+
         // Update lobby items for all players
         for (CTFPlayer ctfPlayer : game.getPlayers()) {
             Player player = ctfPlayer.getPlayer();
@@ -287,7 +287,7 @@ public class GameManager {
                 plugin.getLobbyManager().updatePlayerState(player);
             }
         }
-        
+
         plugin.getLogger().info("Stopped countdown for game in arena: " + game.getArena().getName());
     }
 
@@ -333,7 +333,7 @@ public class GameManager {
                 applyBasicLoadoutToPlayer(player);
                 applyTeamColoredArmor(player, ctfPlayer.getTeam());
                 applySpawnProtection(player);
-                
+
                 // Update lobby items to playing state
                 plugin.getLobbyManager().updatePlayerState(player);
             }
@@ -472,8 +472,8 @@ public class GameManager {
      * Apply team colored armor
      */
     public void applyTeamColoredArmor(Player player, Arena.TeamColor teamColor) {
-        org.bukkit.Color armorColor = teamColor == Arena.TeamColor.RED ? 
-            org.bukkit.Color.RED : org.bukkit.Color.BLUE;
+        org.bukkit.Color armorColor = teamColor == Arena.TeamColor.RED ?
+                org.bukkit.Color.RED : org.bukkit.Color.BLUE;
 
         ItemStack helmet = new ItemStack(Material.LEATHER_HELMET);
         ItemStack chestplate = new ItemStack(Material.LEATHER_CHESTPLATE);
@@ -511,11 +511,11 @@ public class GameManager {
         if (kills >= 5) {
             ItemStack sword = player.getInventory().getItem(0);
             if (sword != null && sword.getType() == Material.IRON_SWORD) {
-                sword.addEnchantment(org.bukkit.enchantments.Enchantment.DAMAGE_ALL, Math.min(kills / 5, 3));
+                sword.addEnchantment(org.bukkit.enchantments.Enchantment.SHARPNESS, Math.min(kills / 5, 3));
                 ItemMeta meta = sword.getItemMeta();
                 if (meta != null) {
                     meta.setDisplayName(plugin.getMessageManager().processMessage(
-                        team.getColorCode() + "Enhanced Sword +" + Math.min(kills / 5, 3)));
+                            team.getColorCode() + "Enhanced Sword +" + Math.min(kills / 5, 3)));
                     sword.setItemMeta(meta);
                 }
             }
@@ -528,15 +528,15 @@ public class GameManager {
     public void applySpawnProtection(Player player) {
         int protectionTime = plugin.getConfigManager().getGameplaySetting("spawn-protection-seconds", 5);
         long protectionEnd = System.currentTimeMillis() + (protectionTime * 1000L);
-        
+
         spawnProtection.put(player.getUniqueId(), protectionEnd);
-        
+
         // Show spawn protection boss bar
         plugin.getMessageManager().showSpawnProtectionBossBar(player);
-        
+
         // Apply visual effects
-        player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, protectionTime * 20, 255, false, false));
-        
+        player.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, protectionTime * 20, 255, false, false));
+
         plugin.getLogger().info("Applied spawn protection to " + player.getName() + " for " + protectionTime + " seconds");
     }
 
@@ -546,11 +546,11 @@ public class GameManager {
     public void removeSpawnProtection(Player player) {
         if (spawnProtection.remove(player.getUniqueId()) != null) {
             // Remove visual effects
-            player.removePotionEffect(PotionEffectType.DAMAGE_RESISTANCE);
-            
+            player.removePotionEffect(PotionEffectType.RESISTANCE);
+
             // Remove boss bar
             plugin.getMessageManager().removeSpawnProtectionBossBar(player);
-            
+
             plugin.getLogger().info("Removed spawn protection from " + player.getName());
         }
     }
@@ -563,13 +563,13 @@ public class GameManager {
         if (protectionEnd == null) {
             return false;
         }
-        
+
         if (System.currentTimeMillis() >= protectionEnd) {
             // Protection expired, remove it
             removeSpawnProtection(player);
             return false;
         }
-        
+
         return true;
     }
 
@@ -620,16 +620,16 @@ public class GameManager {
      */
     private void startRespawnCountdown(Player player, CTFPlayer ctfPlayer) {
         int respawnDelay = plugin.getConfigManager().getGameplaySetting("respawn-delay-seconds", 3);
-        
+
         player.setGameMode(GameMode.SPECTATOR);
-        
+
         CTFGame game = ctfPlayer.getGame();
         if (game != null && game.getArena().getLobbySpawn() != null) {
             Location spectatorPoint = game.getArena().getLobbySpawn().clone();
             spectatorPoint.add(0, 10, 0);
             player.teleport(spectatorPoint);
         }
-        
+
         player.getInventory().clear();
         player.getActivePotionEffects().forEach(effect ->
                 player.removePotionEffect(effect.getType()));
@@ -783,10 +783,10 @@ public class GameManager {
         // Implementation similar to original but with enhanced color processing
         String message = plugin.getMessageManager().processMessage("&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
         player.sendMessage(message);
-        
+
         message = plugin.getMessageManager().processMessage("&6&l                        MATCH RESULTS");
         player.sendMessage(message);
-        
+
         // Continue with enhanced formatting...
     }
 
@@ -802,18 +802,18 @@ public class GameManager {
             Player player = ctfPlayer.getPlayer();
             if (player != null && player.isOnline()) {
                 player.getInventory().clear();
-                
+
                 ItemStack leaveBed = new ItemStack(Material.RED_BED);
                 ItemMeta meta = leaveBed.getItemMeta();
                 if (meta != null) {
                     meta.setDisplayName(plugin.getMessageManager().processMessage("&c&lLeave to Lobby"));
                     meta.setLore(Arrays.asList(
-                        plugin.getMessageManager().processMessage("&7Right-click to return to server lobby"),
-                        plugin.getMessageManager().processMessage("&eOr wait for automatic teleport")
+                            plugin.getMessageManager().processMessage("&7Right-click to return to server lobby"),
+                            plugin.getMessageManager().processMessage("&eOr wait for automatic teleport")
                     ));
                     leaveBed.setItemMeta(meta);
                 }
-                
+
                 player.getInventory().setItem(8, leaveBed);
                 player.updateInventory();
             }
@@ -847,10 +847,10 @@ public class GameManager {
      */
     public void handlePlayerReconnection(Player player) {
         UUID playerId = player.getUniqueId();
-        
+
         // Check if player was in a game before disconnecting
         PlayerReconnectionData reconData = reconnectionData.get(playerId);
-        
+
         if (reconData != null) {
             // Player was in a game, attempt to restore
             Arena arena = plugin.getArenaManager().getArena(reconData.getArenaName());
@@ -862,16 +862,16 @@ public class GameManager {
                     return;
                 }
             }
-            
+
             // Game no longer exists, clear reconnection data
             reconnectionData.remove(playerId);
         }
-        
+
         // Check if player is currently in a game (in case they're already tracked)
         CTFPlayer ctfPlayer = players.get(playerId);
         if (ctfPlayer != null && ctfPlayer.isInGame()) {
             CTFGame game = ctfPlayer.getGame();
-            
+
             // Show reconnection message
             Map<String, String> placeholders = new HashMap<>();
             placeholders.put("arena", game.getArena().getName());
@@ -887,16 +887,16 @@ public class GameManager {
                     applyTeamKillEnhancements(player, game, ctfPlayer.getTeam());
                 }
                 applySpawnProtection(player);
-                
+
                 // Update lobby items
                 plugin.getLobbyManager().onPlayerReconnect(player);
-                
+
             } else {
                 // Player reconnected to lobby
                 if (game.getArena().getLobbySpawn() != null) {
                     player.teleport(game.getArena().getLobbySpawn());
                 }
-                
+
                 // Update lobby items
                 plugin.getLobbyManager().onPlayerReconnect(player);
             }
@@ -904,7 +904,7 @@ public class GameManager {
             // Update UI elements
             plugin.getScoreboardManager().updatePlayerScoreboard(player);
             plugin.getMessageManager().updateGameTimeBossBar(game);
-            
+
         } else {
             // Player is not in any game, update lobby items
             plugin.getLobbyManager().onPlayerReconnect(player);
@@ -918,20 +918,20 @@ public class GameManager {
         // Load player data
         Map<String, Object> playerData = plugin.getPlayerDataManager().loadPlayerData(player.getUniqueId());
         CTFPlayer ctfPlayer = new CTFPlayer(player, playerData);
-        
+
         // Restore team
         ctfPlayer.setTeam(reconData.getTeam());
-        
+
         // Add back to game
         game.addPlayer(ctfPlayer);
         players.put(player.getUniqueId(), ctfPlayer);
-        
+
         // Show reconnection message
         Map<String, String> placeholders = new HashMap<>();
         placeholders.put("arena", game.getArena().getName());
         placeholders.put("team", reconData.getTeam().getName());
         player.sendMessage(plugin.getConfigManager().getMessage("reconnected-to-game", placeholders));
-        
+
         // Restore based on game state
         if (game.getState() == GameState.PLAYING) {
             // Restore to active game
@@ -946,12 +946,12 @@ public class GameManager {
                 player.teleport(game.getArena().getLobbySpawn());
             }
         }
-        
+
         // Update UI
         plugin.getLobbyManager().onPlayerReconnect(player);
         plugin.getScoreboardManager().updatePlayerScoreboard(player);
         plugin.getMessageManager().updateGameTimeBossBar(game);
-        
+
         // Clear reconnection data
         reconnectionData.remove(player.getUniqueId());
     }
@@ -966,11 +966,11 @@ public class GameManager {
 
             // Store reconnection data
             PlayerReconnectionData reconData = new PlayerReconnectionData(
-                player.getUniqueId(),
-                game.getArena().getName(),
-                ctfPlayer.getTeam(),
-                game.getState(),
-                ctfPlayer.hasFlag()
+                    player.getUniqueId(),
+                    game.getArena().getName(),
+                    ctfPlayer.getTeam(),
+                    game.getState(),
+                    ctfPlayer.hasFlag()
             );
             reconnectionData.put(player.getUniqueId(), reconData);
 
@@ -996,7 +996,7 @@ public class GameManager {
         plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
             long currentTime = System.currentTimeMillis();
             long maxAge = 5 * 60 * 1000; // 5 minutes
-            
+
             reconnectionData.entrySet().removeIf(entry -> {
                 return currentTime - entry.getValue().getDisconnectTime() > maxAge;
             });

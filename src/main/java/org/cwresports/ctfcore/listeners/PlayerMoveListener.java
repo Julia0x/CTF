@@ -77,7 +77,7 @@ public class PlayerMoveListener implements Listener {
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
-        
+
         // Check if player is in a game
         CTFPlayer ctfPlayer = plugin.getGameManager().getCTFPlayer(player);
         if (ctfPlayer == null || !ctfPlayer.isInGame()) {
@@ -91,8 +91,8 @@ public class PlayerMoveListener implements Listener {
 
         // Only process if player actually moved to a different block
         if (event.getFrom().getBlockX() == event.getTo().getBlockX() &&
-            event.getFrom().getBlockY() == event.getTo().getBlockY() &&
-            event.getFrom().getBlockZ() == event.getTo().getBlockZ()) {
+                event.getFrom().getBlockY() == event.getTo().getBlockY() &&
+                event.getFrom().getBlockZ() == event.getTo().getBlockZ()) {
             return;
         }
 
@@ -140,26 +140,26 @@ public class PlayerMoveListener implements Listener {
         // Check if player is within capture radius
         if (playerLocation.distance(capturePoint) <= captureRadius) {
             UUID playerId = ctfPlayer.getPlayer().getUniqueId();
-            
+
             if (instantCapture) {
                 // Instant capture - no delay
                 boolean success = game.captureFlag(ctfPlayer);
                 if (success) {
-                    player.playSound(player.getLocation(), 
-                                   plugin.getConfigManager().getSound("flag_captured"), 1.0f, 1.0f);
-                    
+                    ctfPlayer.getPlayer().playSound(ctfPlayer.getPlayer().getLocation(),
+                            plugin.getConfigManager().getSound("flag_captured"), 1.0f, 1.0f);
+
                     // Show instant capture title
                     Map<String, String> placeholders = new HashMap<>();
                     placeholders.put("team_name", ctfPlayer.getTeam().getName().toUpperCase());
-                    
+
                     String title = "§a§lFLAG CAPTURED!";
                     String subtitle = "§e§l" + ctfPlayer.getTeam().getColorCode() + ctfPlayer.getTeam().getName().toUpperCase() + " TEAM";
-                    
+
                     ctfPlayer.getPlayer().sendTitle(title, subtitle, 10, 40, 10);
-                    
+
                     plugin.getLogger().info("Player " + ctfPlayer.getPlayer().getName() + " instantly captured flag");
                 }
-                
+
             } else {
                 // Timed capture - check if player already has an active capture attempt
                 if (!activeCaptureAttempts.containsKey(playerId)) {
@@ -216,16 +216,16 @@ public class PlayerMoveListener implements Listener {
                 boolean success = game.takeFlag(ctfPlayer, teamColor);
                 if (success) {
                     ctfPlayer.getPlayer().playSound(ctfPlayer.getPlayer().getLocation(),
-                                                   plugin.getConfigManager().getSound("flag_taken"), 1.0f, 1.0f);
-                    
+                            plugin.getConfigManager().getSound("flag_taken"), 1.0f, 1.0f);
+
                     // Show instant take title
                     String title = "§e§lFLAG TAKEN!";
                     String subtitle = "§a§l" + teamColor.getColorCode() + teamColor.getName().toUpperCase() + " FLAG";
-                    
+
                     ctfPlayer.getPlayer().sendTitle(title, subtitle, 10, 30, 10);
-                    
+
                     plugin.getLogger().info("Player " + ctfPlayer.getPlayer().getName() + " instantly took " + teamColor.getName() + " flag");
-                    
+
                     // Update last attempt time
                     lastFlagTakeAttempt.put(playerId, System.currentTimeMillis());
                 }
@@ -247,16 +247,16 @@ public class PlayerMoveListener implements Listener {
 
                 game.broadcastMessage("flag-returned-clean", placeholders);
                 ctfPlayer.getPlayer().playSound(ctfPlayer.getPlayer().getLocation(),
-                                               plugin.getConfigManager().getSound("flag_returned"), 1.0f, 1.0f);
+                        plugin.getConfigManager().getSound("flag_returned"), 1.0f, 1.0f);
 
                 // Show instant return title
                 String title = "§b§lFLAG RETURNED!";
                 String subtitle = "§a§l" + ctfPlayer.getTeam().getColorCode() + ctfPlayer.getTeam().getName().toUpperCase() + " FLAG";
-                
+
                 ctfPlayer.getPlayer().sendTitle(title, subtitle, 10, 30, 10);
-                
+
                 plugin.getLogger().info("Player " + ctfPlayer.getPlayer().getName() + " instantly returned own flag");
-                
+
                 // Update last attempt time
                 lastFlagTakeAttempt.put(playerId, System.currentTimeMillis());
             }
@@ -269,21 +269,21 @@ public class PlayerMoveListener implements Listener {
     private void startAutomaticCaptureAttempt(CTFPlayer ctfPlayer, CTFGame game, Location capturePoint) {
         Player player = ctfPlayer.getPlayer();
         UUID playerId = player.getUniqueId();
-        
+
         int captureTimeSeconds = plugin.getConfigManager().getMainConfig().getInt("flag-capture.capture-time-seconds", 3);
         double captureRadius = plugin.getConfigManager().getMainConfig().getDouble("flag-capture.automatic-radius", 2.0);
-        
-        CaptureAttempt attempt = new CaptureAttempt(player, capturePoint, 
-                                                  ctfPlayer.getCarryingFlag().getTeam(), 
-                                                  captureTimeSeconds, captureRadius);
-        
+
+        CaptureAttempt attempt = new CaptureAttempt(player, capturePoint,
+                ctfPlayer.getCarryingFlag().getTeam(),
+                captureTimeSeconds, captureRadius);
+
         activeCaptureAttempts.put(playerId, attempt);
-        
+
         // Schedule capture completion check
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             checkCaptureCompletion(playerId, game);
         }, captureTimeSeconds * 20L);
-        
+
         // Start title display if enabled
         if (plugin.getConfigManager().getMainConfig().getBoolean("flag-capture.show-capture-title", true)) {
             startCaptureTitle(player, captureTimeSeconds);
@@ -311,7 +311,7 @@ public class PlayerMoveListener implements Listener {
             if (timeRemaining > 0) {
                 Map<String, String> placeholders = new HashMap<>();
                 placeholders.put("time", String.valueOf(timeRemaining));
-                
+
                 plugin.getMessageManager().sendTitle(player, "title-capturing-flag", "subtitle-capturing-flag", placeholders);
             }
         }
@@ -323,26 +323,23 @@ public class PlayerMoveListener implements Listener {
     private void startCaptureTitle(Player player, int captureTimeSeconds) {
         plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
             int timeLeft = captureTimeSeconds;
-            
+
             @Override
             public void run() {
                 if (!player.isOnline() || !activeCaptureAttempts.containsKey(player.getUniqueId())) {
                     return;
                 }
-                
+
                 if (timeLeft <= 0) {
                     return;
                 }
-                
+
                 // Show countdown title
                 Map<String, String> placeholders = new HashMap<>();
                 placeholders.put("time", String.valueOf(timeLeft));
-                
-                String title = "§a§lCAPTURING FLAG";
-                String subtitle = "§e§l" + timeLeft;
-                
-                player.sendTitle(title, subtitle, 0, 25, 0);
-                
+
+                plugin.getMessageManager().sendTitle(player, "title-capturing-flag", "subtitle-capturing-flag", placeholders);
+
                 timeLeft--;
             }
         }, 0L, 20L);
@@ -374,20 +371,20 @@ public class PlayerMoveListener implements Listener {
             // Complete the capture
             boolean success = game.captureFlag(ctfPlayer);
             if (success) {
-                player.playSound(player.getLocation(), 
-                               plugin.getConfigManager().getSound("flag_captured"), 1.0f, 1.0f);
-                
+                player.playSound(player.getLocation(),
+                        plugin.getConfigManager().getSound("flag_captured"), 1.0f, 1.0f);
+
                 // Show completion title
                 Map<String, String> placeholders = new HashMap<>();
                 placeholders.put("team_name", ctfPlayer.getTeam().getName().toUpperCase());
-                
+
                 String title = "§a§lFLAG CAPTURED!";
                 String subtitle = "§e§l" + ctfPlayer.getTeam().getColorCode() + ctfPlayer.getTeam().getName().toUpperCase() + " TEAM";
-                
+
                 player.sendTitle(title, subtitle, 10, 40, 10);
             }
         }
-        
+
         activeCaptureAttempts.remove(playerId);
     }
 
@@ -412,19 +409,14 @@ public class PlayerMoveListener implements Listener {
         Location playerLocation = event.getTo();
 
         // Check if player is outside arena boundaries
-        if (arena.getBoundaryMin() != null && arena.getBoundaryMax() != null) {
-            if (playerLocation.getX() < arena.getBoundaryMin().getX() || 
-                playerLocation.getX() > arena.getBoundaryMax().getX() ||
-                playerLocation.getZ() < arena.getBoundaryMin().getZ() || 
-                playerLocation.getZ() > arena.getBoundaryMax().getZ()) {
-                
-                if (plugin.getConfigManager().getMainConfig().getBoolean("boundaries.teleport-back-on-exit", true)) {
-                    event.setCancelled(true);
-                    
-                    if (plugin.getConfigManager().getMainConfig().getBoolean("boundaries.warning-message-enabled", true)) {
-                        Map<String, String> placeholders = new HashMap<>();
-                        ctfPlayer.getPlayer().sendMessage(plugin.getConfigManager().getMessage("boundary-warning", placeholders));
-                    }
+        // Check if player is outside WorldGuard region
+        if (!plugin.getWorldGuardManager().isLocationInRegion(playerLocation, arena.getWorldGuardRegion())) {
+            if (plugin.getConfigManager().getMainConfig().getBoolean("boundaries.teleport-back-on-exit", true)) {
+                event.setCancelled(true);
+
+                if (plugin.getConfigManager().getMainConfig().getBoolean("boundaries.warning-message-enabled", true)) {
+                    Map<String, String> placeholders = new HashMap<>();
+                    ctfPlayer.getPlayer().sendMessage(plugin.getConfigManager().getMessage("boundary-warning", placeholders));
                 }
             }
         }
