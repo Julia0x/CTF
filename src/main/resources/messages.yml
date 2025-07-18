@@ -96,20 +96,28 @@ already-in-game: "&c❌ You are already in a CTF game."
 
 # Flag events - CLEAN AND SPACED PROPERLY
 flag-taken: "{team_color}{player} &atook the {enemy_color}{enemy_team} &aflag!"
+flag-taken-instant: "{team_color}{player} &a&lINSTANTLY&a took the {enemy_color}{enemy_team} &aflag!"
 flag-captured: "\n{team_color}{player} &a&lCAPTURED&a the {enemy_color}{enemy_team} &aflag! &7({team_score}/{flags_to_win})\n"
+flag-captured-instant: "\n{team_color}{player} &a&lINSTANTLY CAPTURED&a the {enemy_color}{enemy_team} &aflag! &7({team_score}/{flags_to_win})\n"
 flag-dropped: "{team_color}{player} &edropped the {enemy_color}{enemy_team} &eflag!"
 flag-returned-clean: "&a✅ {team_color}Flag returned &aby {player}"
+flag-returned-instant: "&a✅ {team_color}Flag &a&lINSTANTLY&a returned &aby {player}"
 flag-returned-disconnect: "&e⚠ {team_color}Flag returned &e- {player} disconnected"
 flag-already-taken: "&c❌ The flag is already taken!"
 flag-own-team: "&c❌ You cannot take your own team's flag!"
 flag-must-return: "&c⚠ You must return your flag before capturing the enemy flag!"
 capture-flag-hint: "&a&l💡 Right-click and hold the capture point for 3 seconds to capture the flag!"
+capture-flag-hint-instant: "&a&l💡 Walk into the capture area to instantly capture the flag!"
 capture-point-too-far: "&c❌ You must be closer to your capture point to capture the flag!"
 no-flag-to-capture: "&c❌ You are not carrying a flag!"
 
 # Automatic capture messages
 title-capturing-flag: "&a&lCAPTURING FLAG"
 subtitle-capturing-flag: "&e&l{time} seconds remaining"
+title-instant-capture: "&a&lINSTANT CAPTURE!"
+subtitle-instant-capture: "&e&lFlag captured immediately!"
+title-instant-break: "&e&lINSTANT BREAK!"
+subtitle-instant-break: "&a&lFlag taken immediately!"
 
 # Combat messages - SIMPLIFIED
 player-killed: "{killer_color}{killer} &eeliminated {victim_color}{victim}&e!"
