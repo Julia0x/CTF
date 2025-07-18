@@ -250,6 +250,15 @@ public class CTFCore extends JavaPlugin {
      * Shutdown all managers properly
      */
     private void shutdownManagers() {
+        // Shutdown autojoin manager
+        if (autojoinManager != null) {
+            try {
+                autojoinManager.shutdown();
+            } catch (Exception e) {
+                getLogger().warning("Could not shutdown autojoin manager: " + e.getMessage());
+            }
+        }
+
         // Shutdown scoreboard manager
         if (scoreboardManager != null) {
             try {
