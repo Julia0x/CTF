@@ -180,6 +180,12 @@ public class CTFCore extends JavaPlugin {
     private void initializeManagers() {
         // First, initialize config manager and load configurations
         configManager = new ConfigManager(this);
+        
+        // Initialize migration manager and perform migrations BEFORE loading configs
+        configMigrationManager = new ConfigMigrationManager(this);
+        configMigrationManager.checkAndMigrateConfigs();
+        
+        // Now load all configurations (including migrated ones)
         configManager.loadAll();
 
         // Then initialize core managers
@@ -196,6 +202,7 @@ public class CTFCore extends JavaPlugin {
         scoreboardManager = new ScoreboardManager(this);
         lobbyManager = new LobbyManager(this);
         serverLobbyManager = new ServerLobbyManager(this);
+        autojoinManager = new AutojoinManager(this);
         messageManager = new MessageManager(this);
         powerUpManager = new PowerUpManager(this);
         spectatorManager = new SpectatorManager(this);
