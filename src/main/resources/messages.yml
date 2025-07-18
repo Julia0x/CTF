@@ -8,6 +8,7 @@ no-permission: "&c❌ You don't have permission to use this command."
 player-only: "&c❌ This command can only be used by players."
 unknown-command: "&c❌ Unknown command. Use &e/ctf help &cfor available commands."
 plugin-reloaded: "&a✅ Plugin configuration reloaded successfully."
+welcome-message: "&a✅ Welcome to the CTF server, {player}!"
 
 # Arena management messages
 arena-created: "&a✅ Arena &e{arena} &acreated successfully!\n&7   Use the admin toolkit to set up the arena."
@@ -22,6 +23,10 @@ arena-incomplete-deleted: "&c🗑 Incomplete arena &e{arena} &chas been deleted 
 server-lobby-set: "&a✅ Server lobby spawn point has been set at your current location."
 server-lobby-not-set: "&c❌ Server lobby spawn point has not been configured.\n&7   Use &e/ctfadmin setserverlobby&7."
 teleported-to-server-lobby: "&a🏠 Teleported to server lobby."
+
+# Reconnection messages
+reconnected-to-game: "&a🔄 &eReconnected to game in arena &a{arena} &eas {team} team!"
+reconnection-failed: "&c❌ Could not reconnect to your previous game."
 
 # WorldGuard integration
 worldguard-region-not-found: "&c❌ WorldGuard region &e{region} &cnot found in world &e{world}&c."
@@ -102,6 +107,10 @@ capture-flag-hint: "&a&l💡 Right-click and hold the capture point for 3 second
 capture-point-too-far: "&c❌ You must be closer to your capture point to capture the flag!"
 no-flag-to-capture: "&c❌ You are not carrying a flag!"
 
+# Automatic capture messages
+title-capturing-flag: "&a&lCAPTURING FLAG"
+subtitle-capturing-flag: "&e&l{time} seconds remaining"
+
 # Combat messages - SIMPLIFIED
 player-killed: "{killer_color}{killer} &eeliminated {victim_color}{victim}&e!"
 killed-flag-carrier: "{killer_color}{killer} &eeliminated flag carrier {victim_color}{victim}&e!"
@@ -124,6 +133,9 @@ xp-gained: "&b+{amount} XP"
 # Currency system messages
 currency-earned: "&6+{amount} Coins"
 
+# Team assignment messages
+team-assigned: "&a✅ You have been assigned to {team_color}{team_name} &ateam!"
+
 # Title messages - Call of Duty style
 title-flag-taken: "&c&lFLAG TAKEN!"
 title-flag-captured: "&a&lFLAG CAPTURED!"
@@ -136,7 +148,6 @@ title-killed: "&c&lELIMINATED!"
 title-level-up: "&6&lLE&e&lVEL &6&lUP!"
 title-performance: "&6&l{kills} &f&l/ &c&l{deaths} &f&l/ &a&l{captures}"
 subtitle-performance: "&7K/D: &f{kd} &7• &7Captures: &f{captures}"
-arena-enabled: "&a&lArena {arena} is now enabled!"
 
 # Boss bar messages - CLEAN
 bossbar-waiting: "&e⏳ Waiting for players: {current}/{min}"
