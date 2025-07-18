@@ -4,17 +4,21 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.cwresports.ctfcore.CTFCore;
 import org.cwresports.ctfcore.managers.ArenaManager;
 import org.cwresports.ctfcore.models.Arena;
+import org.cwresports.ctfcore.models.CTFPlayer;
+import org.cwresports.ctfcore.models.GameState;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Handles block break events for flag setup and protection
+ * Enhanced block break listener with comprehensive tracking and flag interaction
+ * Handles block breaking during CTF games with proper tracking and restrictions
  */
 public class BlockBreakListener implements Listener {
     
@@ -24,19 +28,25 @@ public class BlockBreakListener implements Listener {
         this.plugin = plugin;
     }
     
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH)
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
         Block block = event.getBlock();
         
-        // Check if player is in flag setup mode
+        // Check if player is in flag setup mode (admin functionality)
         if (plugin.getArenaManager().isPlayerInSetupMode(player)) {
             handleFlagSetup(event, player, block);
             return;
         }
         
-        // Check if block is in a CTF arena
-        checkArenaProtection(event, player, block);
+        // Check if player is in a CTF game
+        CTFPlayer ctfPlayer = plugin.getGameManager().getCTFPlayer(player);
+        if (ctfPlayer == null || !ctfPlayer.isInGame()) {
+            return; // Not in CTF game, allow normal behavior
+        }
+        
+        // Handle CTF game block breaking
+        handleCTFGameBlockBreaking(event, player, block, ctfPlayer);
     }
     
     /**
@@ -51,7 +61,8 @@ public class BlockBreakListener implements Listener {
         
         // Check if block is a banner
         if (!block.getType().name().contains("BANNER")) {
-            player.sendMessage(plugin.getConfigManager().getMessage("setup-must-break-banner"));
+            String message = plugin.getMessageManager().processMessage("&c⛔ You must break a banner to set the flag location!");
+            player.sendMessage(message);
             event.setCancelled(true);
             return;
         }
@@ -66,7 +77,11 @@ public class BlockBreakListener implements Listener {
             Map<String, String> placeholders = new HashMap<>();
             placeholders.put("team_name", session.teamColor.getName());
             placeholders.put("team_color", session.teamColor.getColorCode());
-            player.sendMessage(plugin.getConfigManager().getMessage("setup-wrong-banner-color", placeholders));
+            
+            String message = plugin.getMessageManager().processMessage(
+                plugin.getConfigManager().getMessage("setup-wrong-banner-color", placeholders)
+            );
+            player.sendMessage(message);
             event.setCancelled(true);
             return;
         }
@@ -82,57 +97,65 @@ public class BlockBreakListener implements Listener {
             placeholders.put("team_name", session.teamColor.getName());
             placeholders.put("team_color", session.teamColor.getColorCode());
             placeholders.put("arena", session.arenaName);
-            player.sendMessage(plugin.getConfigManager().getMessage("setup-flag-set", placeholders));
+            
+            String message = plugin.getMessageManager().processMessage(
+                plugin.getConfigManager().getMessage("setup-flag-set", placeholders)
+            );
+            player.sendMessage(message);
         } else {
-            player.sendMessage(plugin.getConfigManager().getMessage("error-generic"));
+            String message = plugin.getMessageManager().processMessage("&c❌ Failed to set flag location!");
+            player.sendMessage(message);
         }
     }
     
     /**
-     * Check arena protection and handle flag interactions
+     * Handle block breaking during CTF games
      */
-    private void checkArenaProtection(BlockBreakEvent event, Player player, Block block) {
-        // Check if player is in any active CTF game
-        var ctfPlayer = plugin.getGameManager().getCTFPlayer(player);
-        if (ctfPlayer == null || !ctfPlayer.isInGame()) {
-            return;
-        }
-        
+    private void handleCTFGameBlockBreaking(BlockBreakEvent event, Player player, Block block, CTFPlayer ctfPlayer) {
         var game = ctfPlayer.getGame();
         if (game == null) {
             return;
         }
-
+        
         Arena arena = game.getArena();
         
         // Check if block is within the arena region
         if (!plugin.getWorldGuardManager().isLocationInRegion(block.getLocation(), arena.getWorldGuardRegion())) {
+            return; // Outside arena, let WorldGuard handle it
+        }
+        
+        // Handle banner interactions for flags
+        if (block.getType().name().contains("BANNER")) {
+            handleFlagInteraction(player, ctfPlayer, game, block);
+            // Don't cancel the event yet - let flag interaction decide
             return;
         }
         
-        // During gameplay, blocks cannot be broken except banners
-        if (game.getState() == org.cwresports.ctfcore.models.GameState.PLAYING) {
-            // Allow banners to be broken for flag interactions
-            if (block.getType().name().contains("BANNER")) {
-                handleFlagInteraction(player, ctfPlayer, game, block);
-            }
-            // Cancel all other block breaking
+        // During lobby/waiting phase, prevent all non-flag block breaking
+        if (game.getState() != GameState.PLAYING) {
             event.setCancelled(true);
-        } else {
-            // During lobby/waiting phase, prevent all block breaking
-            event.setCancelled(true);
+            String message = plugin.getMessageManager().processMessage("&c⛔ You cannot break blocks while the game is not active!");
+            player.sendMessage(message);
+            return;
+        }
+        
+        // During gameplay, allow block breaking but track it
+        if (game.getState() == GameState.PLAYING) {
+            // Track the block breaking for cleanup later
+            plugin.getBlockTrackingManager().trackBrokenBlock(player, block, arena);
             
-            // Still allow banner interaction for flag setup
-            if (block.getType().name().contains("BANNER")) {
-                handleFlagInteraction(player, ctfPlayer, game, block);
-            }
+            // Log the block breaking
+            plugin.getLogger().info("Player " + player.getName() + " broke " + block.getType().name() + 
+                                   " at " + block.getLocation().getBlockX() + "," + 
+                                   block.getLocation().getBlockY() + "," + 
+                                   block.getLocation().getBlockZ() + " in arena " + arena.getName());
         }
     }
     
     /**
      * Handle flag taking when player breaks flag banner
      */
-    private void handleFlagInteraction(Player player, org.cwresports.ctfcore.models.CTFPlayer ctfPlayer, 
+    private void handleFlagInteraction(Player player, CTFPlayer ctfPlayer, 
                                       org.cwresports.ctfcore.models.CTFGame game, Block block) {
         
         if (ctfPlayer.getTeam() == null) {
@@ -148,10 +171,14 @@ public class BlockBreakListener implements Listener {
             if (teamData.getFlagLocation() != null && 
                 teamData.getFlagLocation().getBlock().equals(block)) {
                 
-                // This is a team's flag
+                // This is a team's flag - cancel the block break
+                event.setCancelled(true);
+                
+                // Handle flag interaction
                 if (teamColor == ctfPlayer.getTeam()) {
                     // Player trying to take own team's flag
-                    player.sendMessage(plugin.getConfigManager().getMessage("flag-own-team"));
+                    String message = plugin.getMessageManager().processMessage("&c⛔ You cannot take your own team's flag!");
+                    player.sendMessage(message);
                     return;
                 }
                 
@@ -164,16 +191,19 @@ public class BlockBreakListener implements Listener {
                             plugin.getConfigManager().getSound("flag_taken"), 1.0f, 1.0f);
                         
                         // Show capture hint message
-                        player.sendMessage(plugin.getConfigManager().getMessage("capture-flag-hint"));
+                        String message = plugin.getMessageManager().processMessage("&a⚡ Flag taken! Bring it to your capture point!");
+                        player.sendMessage(message);
                     } else {
                         // Could not take flag (maybe need to return own flag first)
-                        player.sendMessage(plugin.getConfigManager().getMessage("flag-already-taken"));
+                        String message = plugin.getMessageManager().processMessage("&c⛔ You must return your team's flag before taking the enemy flag!");
+                        player.sendMessage(message);
                     }
                 } else {
-                    player.sendMessage(plugin.getConfigManager().getMessage("flag-already-taken"));
+                    String message = plugin.getMessageManager().processMessage("&c⛔ The flag is not at its base or is already taken!");
+                    player.sendMessage(message);
                 }
                 
-                break;
+                return;
             }
         }
     }
