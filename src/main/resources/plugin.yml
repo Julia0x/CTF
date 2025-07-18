@@ -1,5 +1,5 @@
 name: CTF-Core
-version: 1.0.0
+version: 1.1.0
 main: org.cwresports.ctfcore.CTFCore
 author: CWReSports
 description: Super Enhanced Capture the Flag gamemode with kill streaks, power-ups, particle effects, and epic gameplay for Paper 1.21+
