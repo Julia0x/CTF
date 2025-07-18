@@ -177,6 +177,13 @@ public class LobbyManager {
         
         String displayName = item.getItemMeta().getDisplayName();
         
+        // Check for autojoin item
+        if (plugin.getAutojoinManager().isAutojoinItem(item)) {
+            plugin.getAutojoinManager().handleAutojoin(player);
+            return true;
+        }
+        
+        // Check for other lobby items
         switch (displayName) {
             case "§c§lLeave Game":
             case "§c§lLeave to Lobby":
