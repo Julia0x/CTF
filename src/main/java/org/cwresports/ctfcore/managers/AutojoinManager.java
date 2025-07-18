@@ -129,7 +129,7 @@ public class AutojoinManager {
         // Get all enabled arenas
         for (Arena arena : plugin.getArenaManager().getEnabledArenas()) {
             if (arena.isEnabled()) {
-                CTFGame game = plugin.getGameManager().getGame(arena.getName());
+                CTFGame game = plugin.getGameManager().getGame(arena);
                 
                 // Check if arena can accept players
                 if (game == null || canJoinGame(game)) {
