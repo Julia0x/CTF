@@ -322,9 +322,6 @@ public class GameManager {
         int gameDuration = plugin.getConfigManager().getGameplaySetting("game-duration-minutes", 10) * 60;
         game.setTimeLeft(gameDuration);
 
-        // **ENHANCED FEATURE: Start block tracking**
-        plugin.getBlockTrackingManager().startTrackingForGame(game);
-
         // Teleport players to team spawns and give loadouts
         for (CTFPlayer ctfPlayer : game.getPlayers()) {
             Player player = ctfPlayer.getPlayer();
@@ -708,9 +705,7 @@ public class GameManager {
     public void endGame(CTFGame game, Arena.TeamColor winner) {
         game.setState(GameState.ENDING);
 
-        // **ENHANCED FEATURE: Stop block tracking and restore arena**
-        plugin.getBlockTrackingManager().stopTrackingAndRestore(game);
-
+        plugin.getArenaManager().restoreArena(game.getArena());
         plugin.getPowerUpManager().stopPowerUpSpawning(game);
 
         // Award wins and currency
@@ -1017,9 +1012,6 @@ public class GameManager {
             task.cancel();
         }
         respawnTasks.clear();
-
-        // **ENHANCED FEATURE: Emergency block tracking cleanup**
-        plugin.getBlockTrackingManager().emergencyCleanup();
 
         // Clear all data
         spawnProtection.clear();

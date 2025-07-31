@@ -29,7 +29,6 @@ public class PowerUpManager {
     private final CTFCore plugin;
     private final Map<CTFGame, List<PowerUp>> activePowerUps;
     private final Map<CTFGame, BukkitTask> spawnTasks;
-    private final Map<Arena, List<Location>> powerupSpawnPoints;
 
     public enum PowerUpType {
         SPEED_BOOST("§e⚡ Speed Boost", Material.SUGAR,
@@ -163,39 +162,8 @@ public class PowerUpManager {
         this.plugin = plugin;
         this.activePowerUps = new ConcurrentHashMap<>();
         this.spawnTasks = new ConcurrentHashMap<>();
-        this.powerupSpawnPoints = new ConcurrentHashMap<>();
     }
 
-    /**
-     * Add a powerup spawn point to an arena
-     */
-    public void addPowerupSpawnPoint(Arena arena, Location location) {
-        powerupSpawnPoints.computeIfAbsent(arena, k -> new ArrayList<>()).add(location.clone());
-        plugin.getLogger().info("Added powerup spawn point for arena " + arena.getName() + " at " +
-                location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ());
-    }
-
-    /**
-     * Get the number of powerup spawn points for an arena
-     */
-    public int getPowerupSpawnCount(Arena arena) {
-        List<Location> spawns = powerupSpawnPoints.get(arena);
-        return spawns != null ? spawns.size() : 0;
-    }
-
-    /**
-     * Get all powerup spawn points for an arena
-     */
-    public List<Location> getPowerupSpawnPoints(Arena arena) {
-        return powerupSpawnPoints.getOrDefault(arena, new ArrayList<>());
-    }
-
-    /**
-     * Clear all powerup spawn points for an arena
-     */
-    public void clearPowerupSpawnPoints(Arena arena) {
-        powerupSpawnPoints.remove(arena);
-    }
 
     /**
      * Enhanced start power-up spawning for a game
@@ -316,7 +284,7 @@ public class PowerUpManager {
      * Enhanced get random location method with better fallback
      */
     private Location getRandomPowerUpLocation(Arena arena) {
-        List<Location> spawnPoints = powerupSpawnPoints.get(arena);
+        List<Location> spawnPoints = arena.getPowerupSpawnPoints();
 
         if (spawnPoints != null && !spawnPoints.isEmpty()) {
             // Use configured spawn points
@@ -394,7 +362,7 @@ public class PowerUpManager {
      */
     public Map<String, Object> getDebugInfo(Arena arena) {
         Map<String, Object> info = new HashMap<>();
-        info.put("configured_spawn_points", getPowerupSpawnCount(arena));
+        info.put("configured_spawn_points", arena.getPowerupSpawnPoints().size());
         info.put("has_boundaries", false); // Boundaries not implemented in Arena model
         info.put("has_flag_locations",
                 arena.getTeam(Arena.TeamColor.RED).getFlagLocation() != null &&
@@ -426,7 +394,6 @@ public class PowerUpManager {
             }
         }
         activePowerUps.clear();
-        powerupSpawnPoints.clear();
 
         plugin.getLogger().info("PowerUpManager cleanup complete");
     }

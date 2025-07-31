@@ -4,12 +4,33 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
+import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.WorldEditException;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.extent.clipboard.Clipboard;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardWriter;
+import com.sk89q.worldedit.function.operation.Operation;
+import com.sk89q.worldedit.function.operation.Operations;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.regions.CuboidRegion;
+import com.sk89q.worldedit.session.ClipboardHolder;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.cwresports.ctfcore.CTFCore;
 import org.cwresports.ctfcore.models.Arena;
 
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -207,9 +228,56 @@ public class ArenaManager {
         // Enable the arena
         arena.setEnabled(true);
         saveArena(arena);
+        saveArenaSchematic(arena);
 
         plugin.getLogger().info("Enabled arena: " + name);
         return new ValidationResult(true, "Arena enabled successfully");
+    }
+
+    public void saveArenaSchematic(Arena arena) {
+        try {
+            File schematicFile = new File(plugin.getDataFolder() + "/schematics/" + arena.getName() + ".schem");
+            schematicFile.getParentFile().mkdirs();
+
+            com.sk89q.worldedit.world.World worldEditWorld = BukkitAdapter.adapt(arena.getWorld());
+            BlockVector3 min = plugin.getWorldGuardManager().getRegionMin(arena.getWorld(), arena.getWorldGuardRegion());
+            BlockVector3 max = plugin.getWorldGuardManager().getRegionMax(arena.getWorld(), arena.getWorldGuardRegion());
+            CuboidRegion region = new CuboidRegion(worldEditWorld, min, max);
+            Clipboard clipboard = new ClipboardHolder(region).getClipboard();
+
+            try (ClipboardWriter writer = ClipboardFormats.findByFile(schematicFile).getWriter(new FileOutputStream(schematicFile))) {
+                writer.write(clipboard);
+            }
+        } catch (IOException | WorldEditException e) {
+            plugin.getLogger().severe("Failed to save schematic for arena " + arena.getName() + ": " + e.getMessage());
+        }
+    }
+
+    public void restoreArena(Arena arena) {
+        try {
+            File schematicFile = new File(plugin.getDataFolder() + "/schematics/" + arena.getName() + ".schem");
+            if (!schematicFile.exists()) {
+                plugin.getLogger().warning("Schematic for arena " + arena.getName() + " not found!");
+                return;
+            }
+
+            ClipboardFormat format = ClipboardFormats.findByFile(schematicFile);
+            try (ClipboardReader reader = format.getReader(new FileInputStream(schematicFile))) {
+                Clipboard clipboard = reader.read();
+                com.sk89q.worldedit.world.World worldEditWorld = BukkitAdapter.adapt(arena.getWorld());
+
+                try (EditSession editSession = WorldEdit.getInstance().newEditSession(worldEditWorld)) {
+                    Operation operation = new ClipboardHolder(clipboard)
+                            .createPaste(editSession)
+                            .to(plugin.getWorldGuardManager().getRegionMin(arena.getWorld(), arena.getWorldGuardRegion()))
+                            .ignoreAirBlocks(false)
+                            .build();
+                    Operations.complete(operation);
+                }
+            }
+        } catch (IOException | WorldEditException e) {
+            plugin.getLogger().severe("Failed to restore schematic for arena " + arena.getName() + ": " + e.getMessage());
+        }
     }
 
     /**

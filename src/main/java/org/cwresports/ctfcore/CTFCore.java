@@ -27,7 +27,6 @@ public class CTFCore extends JavaPlugin {
     private ArenaManager arenaManager;
     private GameManager gameManager;
     private PlayerDataManager playerDataManager;
-    private BlockTrackingManager blockTrackingManager; // **NEW ENHANCED FEATURE**
 
     private WorldGuardManager worldGuardManager;
     private ScoreboardManager scoreboardManager;
@@ -100,16 +99,6 @@ public class CTFCore extends JavaPlugin {
     @Override
     public void onDisable() {
         getLogger().info("Shutting down CTF-Core...");
-
-        // **ENHANCED FEATURE: Emergency block cleanup before shutdown**
-        if (blockTrackingManager != null) {
-            try {
-                getLogger().info("Performing emergency block cleanup...");
-                blockTrackingManager.emergencyCleanup();
-            } catch (Exception e) {
-                getLogger().warning("Could not perform emergency block cleanup: " + e.getMessage());
-            }
-        }
 
         // End all games gracefully
         if (gameManager != null) {
@@ -192,9 +181,6 @@ public class CTFCore extends JavaPlugin {
         worldGuardManager = new WorldGuardManager();
         playerDataManager = new PlayerDataManager(this);
         currencyManager = new CurrencyManager(this);
-        
-        // **ENHANCED FEATURE: Initialize block tracking manager**
-        blockTrackingManager = new BlockTrackingManager(this);
 
         // Initialize managers that depend on config
         arenaManager = new ArenaManager(this);
@@ -236,8 +222,6 @@ public class CTFCore extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerMoveListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerDeathListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerDamageListener(this), this);
-        getServer().getPluginManager().registerEvents(new BlockBreakListener(this), this);
-        getServer().getPluginManager().registerEvents(new BlockPlaceListener(this), this); // **NEW ENHANCED FEATURE**
         getServer().getPluginManager().registerEvents(new PlayerInteractListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerRespawnListener(this), this);
         getServer().getPluginManager().registerEvents(new InventoryClickListener(this), this);
@@ -449,13 +433,6 @@ public class CTFCore extends JavaPlugin {
 
     public HologramLeaderboardManager getHologramLeaderboardManager() {
         return hologramLeaderboardManager;
-    }
-
-    /**
-     * **NEW ENHANCED FEATURE: Get block tracking manager**
-     */
-    public BlockTrackingManager getBlockTrackingManager() {
-        return blockTrackingManager;
     }
 
     public boolean isPlaceholderAPIEnabled() {

@@ -6,6 +6,7 @@ import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.flags.Flags;
+import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -202,5 +203,27 @@ public class WorldGuardManager {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public BlockVector3 getRegionMin(World world, String regionName) {
+        RegionManager regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(world));
+        if (regionManager != null) {
+            ProtectedRegion region = regionManager.getRegion(regionName);
+            if (region != null) {
+                return region.getMinimumPoint();
+            }
+        }
+        return null;
+    }
+
+    public BlockVector3 getRegionMax(World world, String regionName) {
+        RegionManager regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(world));
+        if (regionManager != null) {
+            ProtectedRegion region = regionManager.getRegion(regionName);
+            if (region != null) {
+                return region.getMaximumPoint();
+            }
+        }
+        return null;
     }
 }

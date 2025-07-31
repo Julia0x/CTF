@@ -406,9 +406,10 @@ public class AdminToolManager {
      * Handle powerup spawn tool
      */
     private void handlePowerupTool(Player player, Arena arena) {
-        plugin.getPowerUpManager().addPowerupSpawnPoint(arena, player.getLocation());
+        arena.addPowerupSpawnPoint(player.getLocation());
+        plugin.getArenaManager().saveArenas();
         player.sendMessage("§d✅ Powerup spawn point added at your location!");
-        player.sendMessage("§7Total powerup spawns: §e" + plugin.getPowerUpManager().getPowerupSpawnCount(arena));
+        player.sendMessage("§7Total powerup spawns: §e" + arena.getPowerupSpawnPoints().size());
 
         // Update admin scoreboard
         plugin.getScoreboardManager().updateAdminScoreboard(player, arena);

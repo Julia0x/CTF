@@ -5,7 +5,9 @@ import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.cwresports.ctfcore.CTFCore;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -19,6 +21,7 @@ public class Arena {
     private String worldName;
     private Location lobbySpawn;
     private final Map<TeamColor, Team> teams;
+    private final List<Location> powerupSpawnPoints;
     private boolean inSetupMode;
     
     public enum TeamColor {
@@ -123,6 +126,7 @@ public class Arena {
         this.teams = new HashMap<>();
         this.teams.put(TeamColor.RED, new Team());
         this.teams.put(TeamColor.BLUE, new Team());
+        this.powerupSpawnPoints = new ArrayList<>();
         this.inSetupMode = false;
     }
     
@@ -176,6 +180,15 @@ public class Arena {
             }
         }
         
+        // Load powerup spawn points
+        List<String> powerupSpawns = section.getStringList("powerup_spawn_points");
+        for (String spawnStr : powerupSpawns) {
+            Location loc = parseLocation(spawnStr, arena.worldName);
+            if (loc != null) {
+                arena.addPowerupSpawnPoint(loc);
+            }
+        }
+
         return arena;
     }
     
@@ -208,6 +221,13 @@ public class Arena {
             section.set(teamPath + ".capture_point", 
                 team.getCapturePoint() != null ? locationToString(team.getCapturePoint()) : null);
         }
+
+        // Save powerup spawn points
+        List<String> powerupSpawns = new ArrayList<>();
+        for (Location loc : powerupSpawnPoints) {
+            powerupSpawns.add(locationToString(loc));
+        }
+        section.set("powerup_spawn_points", powerupSpawns);
     }
     
     /**
@@ -343,6 +363,18 @@ public class Arena {
     
     public void setInSetupMode(boolean inSetupMode) {
         this.inSetupMode = inSetupMode;
+    }
+
+    public List<Location> getPowerupSpawnPoints() {
+        return powerupSpawnPoints;
+    }
+
+    public void addPowerupSpawnPoint(Location location) {
+        powerupSpawnPoints.add(location);
+    }
+
+    public void clearPowerupSpawnPoints() {
+        powerupSpawnPoints.clear();
     }
     
     public World getWorld() {

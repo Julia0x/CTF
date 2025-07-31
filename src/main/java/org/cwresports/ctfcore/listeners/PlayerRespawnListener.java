@@ -47,6 +47,7 @@ public class PlayerRespawnListener implements Listener {
         
         // **ENHANCED FEATURE: Immediate arena teleportation**
         // Always set respawn location to arena to prevent main world respawning
+        final Location respawnLocation;
         if (game.getState() == GameState.PLAYING && ctfPlayer.getTeam() != null) {
             // Find best spawn point for the player's team
             Arena.TeamColor team = ctfPlayer.getTeam();
@@ -54,17 +55,18 @@ public class PlayerRespawnListener implements Listener {
             Location bestSpawn = findBestSpawnPoint(teamData, game);
             
             if (bestSpawn != null) {
-                event.setRespawnLocation(bestSpawn);
+                respawnLocation = bestSpawn;
                 plugin.getLogger().info("Set respawn location for " + player.getName() + " to team spawn in arena");
             } else {
                 // Fallback to lobby if no spawns available
-                event.setRespawnLocation(arena.getLobbySpawn());
+                respawnLocation = arena.getLobbySpawn();
                 plugin.getLogger().warning("No team spawn available for " + player.getName() + ", using lobby spawn");
             }
         } else {
             // Game not playing or no team, respawn at lobby
-            event.setRespawnLocation(arena.getLobbySpawn());
+            respawnLocation = arena.getLobbySpawn();
         }
+        event.setRespawnLocation(respawnLocation);
         
         // **ENHANCED FEATURE: Immediate post-respawn setup**
         // Schedule immediate setup on next tick to ensure respawn completes first
@@ -74,6 +76,7 @@ public class PlayerRespawnListener implements Listener {
                 if (!player.isOnline()) {
                     return;
                 }
+                player.teleport(respawnLocation);
                 
                 // Ensure player is in the right game mode
                 if (player.getGameMode() != GameMode.SURVIVAL) {

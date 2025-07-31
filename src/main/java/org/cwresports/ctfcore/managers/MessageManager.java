@@ -29,31 +29,7 @@ public class MessageManager {
     private final Map<UUID, BossBar> playerBossBars;
     private final Map<UUID, BossBar> spawnProtectionBars;
     private final Map<UUID, BukkitTask> spawnProtectionTasks;
-    
-    // Enhanced color code patterns for comprehensive support
-    private static final Pattern HEX_PATTERN = Pattern.compile("&#([A-Fa-f0-9]{6})");
-    private static final Pattern LEGACY_PATTERN = Pattern.compile("&([0-9A-Fa-fK-Ok-oRr])");
-    private static final Pattern SECTION_PATTERN = Pattern.compile("§([0-9A-Fa-fK-Ok-oRr])");
-    
-    // Color code mappings for comprehensive support
-    private static final Map<String, String> COLOR_MAPPINGS = new HashMap<>();
-    static {
-        // Standard colors
-        COLOR_MAPPINGS.put("&0", "§0"); COLOR_MAPPINGS.put("&1", "§1"); COLOR_MAPPINGS.put("&2", "§2"); COLOR_MAPPINGS.put("&3", "§3");
-        COLOR_MAPPINGS.put("&4", "§4"); COLOR_MAPPINGS.put("&5", "§5"); COLOR_MAPPINGS.put("&6", "§6"); COLOR_MAPPINGS.put("&7", "§7");
-        COLOR_MAPPINGS.put("&8", "§8"); COLOR_MAPPINGS.put("&9", "§9"); COLOR_MAPPINGS.put("&a", "§a"); COLOR_MAPPINGS.put("&b", "§b");
-        COLOR_MAPPINGS.put("&c", "§c"); COLOR_MAPPINGS.put("&d", "§d"); COLOR_MAPPINGS.put("&e", "§e"); COLOR_MAPPINGS.put("&f", "§f");
-        
-        // Formatting codes
-        COLOR_MAPPINGS.put("&l", "§l"); COLOR_MAPPINGS.put("&m", "§m"); COLOR_MAPPINGS.put("&n", "§n"); COLOR_MAPPINGS.put("&o", "§o");
-        COLOR_MAPPINGS.put("&r", "§r"); COLOR_MAPPINGS.put("&k", "§k");
-        
-        // Case insensitive versions
-        COLOR_MAPPINGS.put("&A", "§a"); COLOR_MAPPINGS.put("&B", "§b"); COLOR_MAPPINGS.put("&C", "§c"); COLOR_MAPPINGS.put("&D", "§d");
-        COLOR_MAPPINGS.put("&E", "§e"); COLOR_MAPPINGS.put("&F", "§f"); COLOR_MAPPINGS.put("&L", "§l"); COLOR_MAPPINGS.put("&M", "§m");
-        COLOR_MAPPINGS.put("&N", "§n"); COLOR_MAPPINGS.put("&O", "§o"); COLOR_MAPPINGS.put("&R", "§r"); COLOR_MAPPINGS.put("&K", "§k");
-    }
-    
+
     public MessageManager(CTFCore plugin) {
         this.plugin = plugin;
         this.playerBossBars = new ConcurrentHashMap<>();
@@ -76,10 +52,10 @@ public class MessageManager {
         title = plugin.processPlaceholders(player, title);
         subtitle = plugin.processPlaceholders(player, subtitle);
         
-        // Remove prefix from title messages and apply enhanced color processing
+        // Remove prefix from title messages
         String prefix = plugin.getConfigManager().getMessage("plugin-prefix", new HashMap<>());
-        title = enhancedColorProcessing(title.replace(prefix, ""));
-        subtitle = enhancedColorProcessing(subtitle.replace(prefix, ""));
+        title = title.replace(prefix, "");
+        subtitle = subtitle.replace(prefix, "");
         
         // Send title with proper timing
         player.sendTitle(title, subtitle, 10, 40, 10);
@@ -134,9 +110,9 @@ public class MessageManager {
         // Process PlaceholderAPI placeholders
         message = plugin.processPlaceholders(player, message);
         
-        // Remove prefix from boss bar messages and apply enhanced color processing
+        // Remove prefix from boss bar messages
         String prefix = plugin.getConfigManager().getMessage("plugin-prefix", new HashMap<>());
-        message = enhancedColorProcessing(message.replace(prefix, ""));
+        message = message.replace(prefix, "");
         
         bossBar.setTitle(message);
         bossBar.setProgress(Math.max(0.0, Math.min(1.0, progress)));
@@ -180,7 +156,7 @@ public class MessageManager {
                 
                 if (timeLeft <= 0) {
                     // Protection ended
-                    String endMessage = enhancedColorProcessing("&c&l⚠ SPAWN PROTECTION ENDED");
+                    String endMessage = ChatColor.translateAlternateColorCodes('&', "&c&l⚠ SPAWN PROTECTION ENDED");
                     spawnBar.setTitle(endMessage);
                     spawnBar.setColor(BarColor.RED);
                     spawnBar.setProgress(0.0);
@@ -194,8 +170,8 @@ public class MessageManager {
                     return;
                 }
                 
-                // Update boss bar with enhanced color processing
-                String protectionText = enhancedColorProcessing(String.format("&a&l⛨ SPAWN PROTECTION &a- %d seconds remaining", timeLeft));
+                // Update boss bar
+                String protectionText = ChatColor.translateAlternateColorCodes('&', String.format("&a&l⛨ SPAWN PROTECTION &a- %d seconds remaining", timeLeft));
                 spawnBar.setTitle(protectionText);
                 spawnBar.setProgress((double) timeLeft / 5.0);
                 
@@ -266,16 +242,16 @@ public class MessageManager {
         Map<org.cwresports.ctfcore.models.Arena.TeamColor, Integer> teamKills = game.getTeamKills();
         Map<org.cwresports.ctfcore.models.Arena.TeamColor, Integer> flagScores = game.getScores();
         
-        // Apply enhanced color processing for team kills (KILLS FIRST)
-        String redKillsText = enhancedColorProcessing(org.cwresports.ctfcore.models.Arena.TeamColor.RED.getColorCode() + 
+        // Apply color processing for team kills (KILLS FIRST)
+        String redKillsText = ChatColor.translateAlternateColorCodes('&', org.cwresports.ctfcore.models.Arena.TeamColor.RED.getColorCode() +
                                                      teamKills.getOrDefault(org.cwresports.ctfcore.models.Arena.TeamColor.RED, 0));
-        String blueKillsText = enhancedColorProcessing(org.cwresports.ctfcore.models.Arena.TeamColor.BLUE.getColorCode() + 
+        String blueKillsText = ChatColor.translateAlternateColorCodes('&', org.cwresports.ctfcore.models.Arena.TeamColor.BLUE.getColorCode() +
                                                       teamKills.getOrDefault(org.cwresports.ctfcore.models.Arena.TeamColor.BLUE, 0));
         
-        // Apply enhanced color processing for flag scores  
-        String redFlagsText = enhancedColorProcessing(org.cwresports.ctfcore.models.Arena.TeamColor.RED.getColorCode() + 
+        // Apply color processing for flag scores
+        String redFlagsText = ChatColor.translateAlternateColorCodes('&', org.cwresports.ctfcore.models.Arena.TeamColor.RED.getColorCode() +
                                                      flagScores.getOrDefault(org.cwresports.ctfcore.models.Arena.TeamColor.RED, 0));
-        String blueFlagsText = enhancedColorProcessing(org.cwresports.ctfcore.models.Arena.TeamColor.BLUE.getColorCode() + 
+        String blueFlagsText = ChatColor.translateAlternateColorCodes('&', org.cwresports.ctfcore.models.Arena.TeamColor.BLUE.getColorCode() +
                                                       flagScores.getOrDefault(org.cwresports.ctfcore.models.Arena.TeamColor.BLUE, 0));
         
         placeholders.put("red_kills", redKillsText);
@@ -306,10 +282,10 @@ public class MessageManager {
         // Get combined scores
         Map<org.cwresports.ctfcore.models.Arena.TeamColor, Integer> combinedScores = game.getCombinedScores();
         
-        // Apply enhanced color processing for combined scores
-        String redScoreText = enhancedColorProcessing(org.cwresports.ctfcore.models.Arena.TeamColor.RED.getColorCode() + 
+        // Apply color processing for combined scores
+        String redScoreText = ChatColor.translateAlternateColorCodes('&', org.cwresports.ctfcore.models.Arena.TeamColor.RED.getColorCode() +
                                                      combinedScores.getOrDefault(org.cwresports.ctfcore.models.Arena.TeamColor.RED, 0));
-        String blueScoreText = enhancedColorProcessing(org.cwresports.ctfcore.models.Arena.TeamColor.BLUE.getColorCode() + 
+        String blueScoreText = ChatColor.translateAlternateColorCodes('&', org.cwresports.ctfcore.models.Arena.TeamColor.BLUE.getColorCode() +
                                                       combinedScores.getOrDefault(org.cwresports.ctfcore.models.Arena.TeamColor.BLUE, 0));
         
         placeholders.put("red_score", redScoreText);
@@ -326,7 +302,7 @@ public class MessageManager {
         Map<String, String> placeholders = new HashMap<>();
         
         if (winner != null) {
-            placeholders.put("team_color", enhancedColorProcessing(winner.getColorCode()));
+            placeholders.put("team_color", ChatColor.translateAlternateColorCodes('&', winner.getColorCode()));
             placeholders.put("team_name", winner.getName().toUpperCase());
             updateGameBossBar(game, "bossbar-victory", placeholders, 1.0);
         } else {
@@ -334,106 +310,6 @@ public class MessageManager {
         }
     }
 
-    /**
-     * Enhanced color code processing with comprehensive support
-     * Handles legacy codes, section codes, hex codes, and nested formatting
-     */
-    private String enhancedColorProcessing(String text) {
-        if (text == null || text.isEmpty()) {
-            return "";
-        }
-        
-        // Step 1: Handle hex colors (&#RRGGBB format)
-        text = processHexColors(text);
-        
-        // Step 2: Convert all & codes to § codes using ChatColor translation
-        text = ChatColor.translateAlternateColorCodes('&', text);
-        
-        // Step 3: Additional manual processing for any missed codes
-        text = processRemainingColorCodes(text);
-        
-        // Step 4: Handle special formatting combinations
-        text = processSpecialFormatting(text);
-        
-        return text;
-    }
-    
-    /**
-     * Process hex color codes (&#RRGGBB format)
-     */
-    private String processHexColors(String text) {
-        if (text.contains("&#")) {
-            // For 1.16+ servers with hex support
-            try {
-                return HEX_PATTERN.matcher(text).replaceAll(match -> {
-                    String hexCode = match.group(1);
-                    return "§x§" + hexCode.charAt(0) + "§" + hexCode.charAt(1) + "§" + 
-                           hexCode.charAt(2) + "§" + hexCode.charAt(3) + "§" + 
-                           hexCode.charAt(4) + "§" + hexCode.charAt(5);
-                });
-            } catch (Exception e) {
-                // If hex colors aren't supported, fall back to nearest color
-                return text.replaceAll("&#[A-Fa-f0-9]{6}", "§f"); // Default to white
-            }
-        }
-        return text;
-    }
-    
-    /**
-     * Process any remaining color codes that weren't caught by ChatColor.translateAlternateColorCodes
-     */
-    private String processRemainingColorCodes(String text) {
-        for (Map.Entry<String, String> entry : COLOR_MAPPINGS.entrySet()) {
-            text = text.replace(entry.getKey(), entry.getValue());
-        }
-        return text;
-    }
-    
-    /**
-     * Process special formatting combinations and nested codes
-     */
-    private String processSpecialFormatting(String text) {
-        // Handle common formatting patterns
-        text = text.replace("§l§c", "§c§l"); // Ensure color comes before formatting
-        text = text.replace("§l§a", "§a§l");
-        text = text.replace("§l§e", "§e§l");
-        text = text.replace("§l§b", "§b§l");
-        text = text.replace("§l§d", "§d§l");
-        text = text.replace("§l§f", "§f§l");
-        text = text.replace("§l§6", "§6§l");
-        text = text.replace("§l§9", "§9§l");
-        
-        // Handle reset sequences
-        text = text.replace("§r§l", "§r§l");
-        text = text.replace("§r§c", "§r§c");
-        text = text.replace("§r§a", "§r§a");
-        
-        return text;
-    }
-    
-    /**
-     * Process a message with enhanced color support (public method for external use)
-     */
-    public String processMessage(String message) {
-        return enhancedColorProcessing(message);
-    }
-    
-    /**
-     * Process a message with placeholders and enhanced color support
-     */
-    public String processMessage(String message, Map<String, String> placeholders) {
-        if (message == null) return "";
-        
-        // Replace placeholders first
-        if (placeholders != null) {
-            for (Map.Entry<String, String> entry : placeholders.entrySet()) {
-                message = message.replace("{" + entry.getKey() + "}", entry.getValue());
-            }
-        }
-        
-        // Then process colors
-        return enhancedColorProcessing(message);
-    }
     
     /**
      * Clear boss bar for player
