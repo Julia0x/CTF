@@ -1148,4 +1148,8 @@ public class GameManager {
     public Collection<CTFGame> getActiveGames() {
         return activeGames.values();
     }
+
+    public boolean isPlayerInCooldown(Player player) {
+        return playerCooldownStatus.containsKey(player.getUniqueId());
+    }
 }
