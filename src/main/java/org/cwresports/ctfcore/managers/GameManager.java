@@ -732,8 +732,24 @@ public class GameManager {
     }
 
     /**
-     * Start respawn countdown with spectator mode and cooldown tracking
+     * Handle voluntary player leave from arena
      */
+    public void handlePlayerLeaveArena(Player player) {
+        CTFPlayer ctfPlayer = getCTFPlayer(player);
+        if (ctfPlayer != null && ctfPlayer.isInGame()) {
+            removePlayerFromGame(player, true); // Mark as voluntary leave
+            
+            // Send to server lobby
+            plugin.getServerLobbyManager().teleportToServerLobby(player);
+            plugin.getLobbyManager().updatePlayerState(player);
+            
+            // Send confirmation message
+            player.sendMessage(plugin.getConfigManager().getMessage("left-arena-success", 
+                Collections.singletonMap("player", player.getName())));
+            
+            plugin.getLogger().info("Player " + player.getName() + " voluntarily left the arena");
+        }
+    }
     private void startRespawnCountdown(Player player, CTFPlayer ctfPlayer) {
         int respawnDelay = plugin.getConfigManager().getGameplaySetting("respawn-delay-seconds", 3);
 
