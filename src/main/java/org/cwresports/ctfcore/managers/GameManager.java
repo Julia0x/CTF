@@ -879,8 +879,9 @@ public class GameManager {
             }
 
             // Check if player disconnected during cooldown/respawn period
+            Long cooldownStart = playerCooldownStatus.get(playerId);
             long timeSinceDisconnect = System.currentTimeMillis() - reconData.getDisconnectTime();
-            boolean wasDuringCooldown = timeSinceDisconnect < 30000; // 30 seconds threshold for cooldown reconnection
+            boolean wasDuringCooldown = cooldownStart != null || timeSinceDisconnect < 30000; // 30 seconds threshold for cooldown reconnection
             
             // Player was in a game, attempt to restore
             Arena arena = plugin.getArenaManager().getArena(reconData.getArenaName());
