@@ -924,10 +924,24 @@ public class GameManager {
     }
 
     /**
-     * Enhanced player reconnection with proper state restoration and cooldown game handling
+     * Enhanced player reconnection with leave tracking and no rejoin for voluntary leavers
      */
     public void handlePlayerReconnection(Player player) {
         UUID playerId = player.getUniqueId();
+
+        // Check if player voluntarily left an arena - if so, don't allow rejoin
+        if (playersWhoLeftArena.contains(playerId)) {
+            plugin.getLogger().info("Player " + player.getName() + " previously left arena voluntarily - sending to server lobby");
+            
+            // Send to server lobby
+            plugin.getServerLobbyManager().teleportToServerLobby(player);
+            plugin.getLobbyManager().onPlayerReconnect(player);
+            
+            // Send message about being in lobby
+            player.sendMessage(plugin.getConfigManager().getMessage("left-arena-no-rejoin", 
+                Collections.singletonMap("player", player.getName())));
+            return;
+        }
 
         // Check if player was in a game before disconnecting
         PlayerReconnectionData reconData = reconnectionData.get(playerId);
