@@ -22,8 +22,22 @@ public class PlayerJoinListener implements Listener {
         // Remove default vanilla join message
         event.setJoinMessage(null);
         
-        // ENHANCED: Handle player reconnection with improved state restoration
-        plugin.getGameManager().handlePlayerReconnection(event.getPlayer());
+        try {
+            // ENHANCED: Handle player reconnection with improved state restoration
+            plugin.getGameManager().handlePlayerReconnection(event.getPlayer());
+        } catch (Exception e) {
+            // Log the error and send player to server lobby as fallback
+            plugin.getLogger().severe("Error handling player reconnection for " + event.getPlayer().getName() + ": " + e.getMessage());
+            e.printStackTrace();
+            
+            // Fallback: ensure player is sent to server lobby
+            plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                if (event.getPlayer().isOnline()) {
+                    plugin.getServerLobbyManager().teleportToServerLobby(event.getPlayer());
+                    plugin.getLobbyManager().onPlayerReconnect(event.getPlayer());
+                }
+            }, 5L);
+        }
         
         // Update scoreboard for new/returning player
         plugin.getScoreboardManager().updatePlayerScoreboard(event.getPlayer());
