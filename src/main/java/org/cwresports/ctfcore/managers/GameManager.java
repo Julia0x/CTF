@@ -647,7 +647,7 @@ public class GameManager {
     }
 
     /**
-     * Handle player death
+     * Handle player death with instant respawn
      */
     public void handlePlayerDeath(Player player, Player killer) {
         CTFPlayer ctfPlayer = players.get(player.getUniqueId());
@@ -684,8 +684,51 @@ public class GameManager {
             game.returnFlag(ctfPlayer);
         }
 
-        // Start respawn countdown
-        startRespawnCountdown(player, ctfPlayer);
+        // INSTANT RESPAWN - No countdown, respawn immediately
+        performInstantRespawn(player, ctfPlayer, game);
+    }
+
+    /**
+     * Perform instant respawn without countdown
+     */
+    private void performInstantRespawn(Player player, CTFPlayer ctfPlayer, CTFGame game) {
+        // Short delay to let death animation play
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+            if (!player.isOnline() || !ctfPlayer.isInGame()) {
+                return;
+            }
+
+            // Reset player state
+            player.setGameMode(GameMode.SURVIVAL);
+            player.setHealth(20.0);
+            player.setFoodLevel(20);
+            player.setFireTicks(0);
+
+            // Clear any existing effects
+            player.getActivePotionEffects().forEach(effect ->
+                    player.removePotionEffect(effect.getType()));
+
+            // Teleport to team spawn
+            teleportToTeamSpawn(player, ctfPlayer);
+            
+            // Apply loadout and team gear
+            applyBasicLoadoutToPlayer(player);
+            if (ctfPlayer.getTeam() != null) {
+                applyTeamColoredArmor(player, ctfPlayer.getTeam());
+                applyTeamKillEnhancements(player, game, ctfPlayer.getTeam());
+            }
+            
+            // Apply spawn protection
+            applySpawnProtection(player);
+            
+            // Mark as respawned
+            ctfPlayer.respawn();
+
+            // Send respawn message
+            player.sendMessage(plugin.getConfigManager().getMessage("instant-respawn", 
+                Collections.singletonMap("player", player.getName())));
+
+        }, 10L); // 0.5 second delay
     }
 
     /**
