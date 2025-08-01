@@ -1023,34 +1023,54 @@ public class GameManager {
     }
 
     /**
-     * Handle player disconnect with reconnection data storage
+     * Handle player disconnect with reconnection data storage and validation
      */
     public void handlePlayerDisconnect(Player player) {
         CTFPlayer ctfPlayer = players.get(player.getUniqueId());
         if (ctfPlayer != null && ctfPlayer.isInGame()) {
             CTFGame game = ctfPlayer.getGame();
 
-            // Store reconnection data
-            PlayerReconnectionData reconData = new PlayerReconnectionData(
-                    player.getUniqueId(),
-                    game.getArena().getName(),
-                    ctfPlayer.getTeam(),
-                    game.getState(),
-                    ctfPlayer.hasFlag()
-            );
-            reconnectionData.put(player.getUniqueId(), reconData);
-
-            if (ctfPlayer.hasFlag()) {
-                CTFFlag flag = ctfPlayer.getCarryingFlag();
-                flag.returnToBase();
-                ctfPlayer.setCarryingFlag(null);
-
-                Map<String, String> placeholders = new HashMap<>();
-                placeholders.put("player", player.getName());
-                placeholders.put("team_color", flag.getTeam().getColorCode());
-                game.broadcastMessage("flag-returned-disconnect", placeholders);
+            // Validate player and game state before storing reconnection data
+            if (game == null || game.getState() == GameState.ENDING) {
+                plugin.getLogger().info("Player " + player.getName() + " disconnected from invalid/ending game state");
+                return;
             }
 
+            // Only store reconnection data if team is valid
+            Arena.TeamColor playerTeam = ctfPlayer.getTeam();
+            if (playerTeam != null && game.getArena() != null) {
+                // Store reconnection data
+                PlayerReconnectionData reconData = new PlayerReconnectionData(
+                        player.getUniqueId(),
+                        game.getArena().getName(),
+                        playerTeam,
+                        game.getState(),
+                        ctfPlayer.hasFlag()
+                );
+                reconnectionData.put(player.getUniqueId(), reconData);
+                
+                plugin.getLogger().info("Stored reconnection data for " + player.getName() + 
+                    " (Team: " + playerTeam.getName() + ", Arena: " + game.getArena().getName() + ")");
+            } else {
+                plugin.getLogger().warning("Cannot store reconnection data for " + player.getName() + 
+                    " - invalid team (" + playerTeam + ") or arena data");
+            }
+
+            // Handle flag dropping if player had one
+            if (ctfPlayer.hasFlag()) {
+                CTFFlag flag = ctfPlayer.getCarryingFlag();
+                if (flag != null) {
+                    flag.returnToBase();
+                    ctfPlayer.setCarryingFlag(null);
+
+                    Map<String, String> placeholders = new HashMap<>();
+                    placeholders.put("player", player.getName());
+                    placeholders.put("team_color", flag.getTeam().getColorCode());
+                    game.broadcastMessage("flag-returned-disconnect", placeholders);
+                }
+            }
+
+            // Save player data
             plugin.getPlayerDataManager().savePlayerData(ctfPlayer);
         }
     }
