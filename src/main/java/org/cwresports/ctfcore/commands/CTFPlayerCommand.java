@@ -130,6 +130,7 @@ public class CTFPlayerCommand implements CommandExecutor, TabCompleter {
             player.sendMessage(plugin.getConfigManager().getMessage("cooldown-command", placeholders));
             return true;
         }
+        
         CTFPlayer ctfPlayer = plugin.getGameManager().getCTFPlayer(player);
 
         if (ctfPlayer == null || !ctfPlayer.isInGame()) {
@@ -137,8 +138,8 @@ public class CTFPlayerCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        plugin.getGameManager().removePlayerFromGame(player);
-        // Leave message removed as requested
+        // Use the new voluntary leave handler
+        plugin.getGameManager().handlePlayerLeaveArena(player);
         plugin.getCooldownManager().setCooldown(player, "leave", 3);
         return true;
     }
