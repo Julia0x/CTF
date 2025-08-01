@@ -235,8 +235,46 @@ public class GameManager {
     }
 
     /**
-     * Get or create a game for an arena
+     * Check team balance and trigger auto-win if one team is empty
      */
+    private void checkTeamBalanceAndAutoWin(CTFGame game) {
+        Map<Arena.TeamColor, List<CTFPlayer>> teamPlayers = new HashMap<>();
+        
+        // Group players by team
+        for (CTFPlayer ctfPlayer : game.getPlayers()) {
+            Arena.TeamColor team = ctfPlayer.getTeam();
+            if (team != null) {
+                teamPlayers.computeIfAbsent(team, k -> new ArrayList<>()).add(ctfPlayer);
+            }
+        }
+
+        // Check if any team is completely empty
+        boolean redTeamEmpty = teamPlayers.getOrDefault(Arena.TeamColor.RED, Collections.emptyList()).isEmpty();
+        boolean blueTeamEmpty = teamPlayers.getOrDefault(Arena.TeamColor.BLUE, Collections.emptyList()).isEmpty();
+
+        Arena.TeamColor winningTeam = null;
+        
+        if (redTeamEmpty && !blueTeamEmpty) {
+            winningTeam = Arena.TeamColor.BLUE;
+            plugin.getLogger().info("Red team is empty, Blue team wins automatically in arena: " + game.getArena().getName());
+        } else if (blueTeamEmpty && !redTeamEmpty) {
+            winningTeam = Arena.TeamColor.RED;
+            plugin.getLogger().info("Blue team is empty, Red team wins automatically in arena: " + game.getArena().getName());
+        }
+
+        if (winningTeam != null) {
+            // Broadcast auto-win message
+            Map<String, String> placeholders = new HashMap<>();
+            placeholders.put("winning_team_color", winningTeam.getColorCode());
+            placeholders.put("winning_team_name", winningTeam.getName());
+            game.broadcastMessage("team-abandoned-auto-win", placeholders);
+            
+            // End game with winning team
+            plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                endGame(game, winningTeam);
+            }, 60L); // 3 second delay to show the message
+        }
+    }
     private CTFGame getOrCreateGame(Arena arena) {
         CTFGame game = activeGames.get(arena);
         if (game == null) {
