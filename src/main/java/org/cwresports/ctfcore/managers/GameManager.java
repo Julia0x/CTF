@@ -66,12 +66,10 @@ public class GameManager {
         this.killStreaks = new ConcurrentHashMap<>();
         this.teamKillCounts = new ConcurrentHashMap<>();
         this.respawnTasks = new ConcurrentHashMap<>();
-        this.reconnectionData = new ConcurrentHashMap<>();
-        this.playerCooldownStatus = new ConcurrentHashMap<>();
         this.playersWhoLeftArena = ConcurrentHashMap.newKeySet();
 
-        // Start cleanup task for old reconnection data
-        startReconnectionCleanupTask();
+        // Start cleanup task for old leave data
+        startLeaveDataCleanupTask();
     }
 
     /**
