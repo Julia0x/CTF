@@ -952,136 +952,19 @@ public class GameManager {
     }
 
     /**
-     * Enhanced player reconnection with leave tracking and no rejoin for voluntary leavers
+     * Simple player join handling - always send to lobby with autojoin items
      */
-    public void handlePlayerReconnection(Player player) {
-        UUID playerId = player.getUniqueId();
-
-        // Check if player voluntarily left an arena - if so, don't allow rejoin
-        if (playersWhoLeftArena.contains(playerId)) {
-            plugin.getLogger().info("Player " + player.getName() + " previously left arena voluntarily - sending to server lobby");
-            
-            // Send to server lobby
-            plugin.getServerLobbyManager().teleportToServerLobby(player);
-            plugin.getLobbyManager().onPlayerReconnect(player);
-            
-            // Send message about being in lobby
-            player.sendMessage(plugin.getConfigManager().getMessage("left-arena-no-rejoin", 
-                Collections.singletonMap("player", player.getName())));
-            return;
-        }
-
-        // Check if player was in a game before disconnecting
-        PlayerReconnectionData reconData = reconnectionData.get(playerId);
-
-        if (reconData != null) {
-            // Validate reconnection data before processing
-            if (reconData.getTeam() == null || reconData.getArenaName() == null) {
-                plugin.getLogger().warning("Invalid reconnection data for player " + player.getName() + 
-                    ". Team: " + reconData.getTeam() + ", Arena: " + reconData.getArenaName());
-                
-                // Clear corrupted data and send player to main lobby
-                reconnectionData.remove(playerId);
-                plugin.getServerLobbyManager().teleportToServerLobby(player);
-                plugin.getLobbyManager().onPlayerReconnect(player);
-                
-                player.sendMessage(plugin.getConfigManager().getMessage("reconnection-failed-to-lobby", 
-                    Collections.singletonMap("reason", "corrupted data")));
-                return;
-            }
-
-            // Check if player disconnected during cooldown/respawn period
-            Long cooldownStart = playerCooldownStatus.get(playerId);
-            long timeSinceDisconnect = System.currentTimeMillis() - reconData.getDisconnectTime();
-            boolean wasDuringCooldown = cooldownStart != null || timeSinceDisconnect < 30000; // 30 seconds threshold for cooldown reconnection
-            
-            // Player was in a game, attempt to restore
-            Arena arena = plugin.getArenaManager().getArena(reconData.getArenaName());
-            if (arena != null) {
-                CTFGame game = activeGames.get(arena);
-                
-                // If game exists and player wants to rejoin (not during cooldown exit)
-                if (game != null && game.getState() != GameState.ENDING && !wasDuringCooldown) {
-                    // Restore player to their game
-                    restorePlayerToGame(player, game, reconData);
-                    return;
-                } else if (wasDuringCooldown) {
-                    // Player exited during cooldown, send to main lobby
-                    plugin.getLogger().info("Player " + player.getName() + " exited during cooldown, sending to main lobby");
-                    reconnectionData.remove(playerId);
-                    plugin.getServerLobbyManager().teleportToServerLobby(player);
-                    plugin.getLobbyManager().onPlayerReconnect(player);
-                    
-                    player.sendMessage(plugin.getConfigManager().getMessage("cooldown-exit-to-lobby", 
-                        Collections.singletonMap("player", player.getName())));
-                    return;
-                }
-            }
-
-            // Game no longer exists or conditions not met, clear reconnection data
-            reconnectionData.remove(playerId);
-            
-            // Send player to main lobby instead of trying to restore to non-existent game
-            plugin.getServerLobbyManager().teleportToServerLobby(player);
-            plugin.getLobbyManager().onPlayerReconnect(player);
-            
-            player.sendMessage(plugin.getConfigManager().getMessage("game-ended-to-lobby", 
-                Collections.singletonMap("arena", reconData.getArenaName())));
-            return;
-        }
-
-        // Check if player is currently in a game (in case they're already tracked)
-        CTFPlayer ctfPlayer = players.get(playerId);
-        if (ctfPlayer != null && ctfPlayer.isInGame()) {
-            CTFGame game = ctfPlayer.getGame();
-
-            // Validate game state before reconnection
-            if (game == null || game.getState() == GameState.ENDING) {
-                // Clean up invalid player state
-                players.remove(playerId);
-                plugin.getServerLobbyManager().teleportToServerLobby(player);
-                plugin.getLobbyManager().onPlayerReconnect(player);
-                return;
-            }
-
-            // Show reconnection message
-            Map<String, String> placeholders = new HashMap<>();
-            placeholders.put("arena", game.getArena().getName());
-            placeholders.put("state", game.getState().toString());
-            player.sendMessage(plugin.getConfigManager().getMessage("reconnected-to-game", placeholders));
-
-            if (game.getState() == GameState.PLAYING) {
-                // Restore player to active game
-                teleportToTeamSpawn(player, ctfPlayer);
-                applyBasicLoadoutToPlayer(player);
-                if (ctfPlayer.getTeam() != null) {
-                    applyTeamColoredArmor(player, ctfPlayer.getTeam());
-                    applyTeamKillEnhancements(player, game, ctfPlayer.getTeam());
-                }
-                applySpawnProtection(player);
-
-                // Update lobby items
-                plugin.getLobbyManager().onPlayerReconnect(player);
-
-            } else {
-                // Player reconnected to lobby
-                if (game.getArena().getLobbySpawn() != null) {
-                    player.teleport(game.getArena().getLobbySpawn());
-                }
-
-                // Update lobby items
-                plugin.getLobbyManager().onPlayerReconnect(player);
-            }
-
-            // Update UI elements
-            plugin.getScoreboardManager().updatePlayerScoreboard(player);
-            plugin.getMessageManager().updateGameTimeBossBar(game);
-
-        } else {
-            // Player is not in any game, update lobby items
-            plugin.getServerLobbyManager().teleportToServerLobby(player);
-            plugin.getLobbyManager().onPlayerReconnect(player);
-        }
+    public void handlePlayerJoin(Player player) {
+        // Always send new/returning players to server lobby
+        plugin.getServerLobbyManager().teleportToServerLobby(player);
+        plugin.getLobbyManager().onPlayerJoin(player);
+        
+        // Clear any old leave status after some time (24 hours)
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+            playersWhoLeftArena.remove(player.getUniqueId());
+        }, 20L * 60 * 60 * 24); // 24 hours
+        
+        plugin.getLogger().info("Player " + player.getName() + " joined - sent to server lobby");
     }
 
     /**
