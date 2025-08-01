@@ -1266,6 +1266,7 @@ public class GameManager {
         activeGames.clear();
         reconnectionData.clear();
         playerCooldownStatus.clear();
+        playersWhoLeftArena.clear();
     }
 
     // Getters
