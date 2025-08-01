@@ -70,6 +70,7 @@ public class GameManager {
         this.respawnTasks = new ConcurrentHashMap<>();
         this.reconnectionData = new ConcurrentHashMap<>();
         this.playerCooldownStatus = new ConcurrentHashMap<>();
+        this.playersWhoLeftArena = ConcurrentHashMap.newKeySet();
 
         // Start cleanup task for old reconnection data
         startReconnectionCleanupTask();
