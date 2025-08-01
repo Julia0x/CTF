@@ -968,99 +968,14 @@ public class GameManager {
     }
 
     /**
-     * Restore player to their game from reconnection data with null safety
-     */
-    private void restorePlayerToGame(Player player, CTFGame game, PlayerReconnectionData reconData) {
-        // Validate reconnection data
-        if (reconData.getTeam() == null) {
-            plugin.getLogger().warning("Cannot restore player " + player.getName() + " - team data is null");
-            
-            // Clear corrupted reconnection data
-            reconnectionData.remove(player.getUniqueId());
-            
-            // Send to main lobby instead
-            plugin.getServerLobbyManager().teleportToServerLobby(player);
-            plugin.getLobbyManager().onPlayerReconnect(player);
-            
-            player.sendMessage(plugin.getConfigManager().getMessage("reconnection-failed-to-lobby", 
-                Collections.singletonMap("reason", "team data corrupted")));
-            return;
-        }
-
-        // Load player data
-        Map<String, Object> playerData = plugin.getPlayerDataManager().loadPlayerData(player.getUniqueId());
-        CTFPlayer ctfPlayer = new CTFPlayer(player, playerData);
-
-        // Restore team
-        ctfPlayer.setTeam(reconData.getTeam());
-
-        // Add back to game
-        game.addPlayer(ctfPlayer);
-        players.put(player.getUniqueId(), ctfPlayer);
-
-        // Show reconnection message with safe team access
-        Map<String, String> placeholders = new HashMap<>();
-        placeholders.put("arena", game.getArena().getName());
-        placeholders.put("team", reconData.getTeam().getName());
-        player.sendMessage(plugin.getConfigManager().getMessage("reconnected-to-game", placeholders));
-
-        // Restore based on game state
-        if (game.getState() == GameState.PLAYING) {
-            // Restore to active game
-            teleportToTeamSpawn(player, ctfPlayer);
-            applyBasicLoadoutToPlayer(player);
-            applyTeamColoredArmor(player, ctfPlayer.getTeam());
-            applyTeamKillEnhancements(player, game, ctfPlayer.getTeam());
-            applySpawnProtection(player);
-        } else {
-            // Restore to lobby
-            if (game.getArena().getLobbySpawn() != null) {
-                player.teleport(game.getArena().getLobbySpawn());
-            }
-        }
-
-        // Update UI
-        plugin.getLobbyManager().onPlayerReconnect(player);
-        plugin.getScoreboardManager().updatePlayerScoreboard(player);
-        plugin.getMessageManager().updateGameTimeBossBar(game);
-
-        // Clear reconnection data after successful restoration
-        reconnectionData.remove(player.getUniqueId());
-    }
-
-    /**
-     * Handle player disconnect with reconnection data storage and validation
+     * Handle player disconnect - simply remove from game, no reconnection data
      */
     public void handlePlayerDisconnect(Player player) {
         CTFPlayer ctfPlayer = players.get(player.getUniqueId());
         if (ctfPlayer != null && ctfPlayer.isInGame()) {
             CTFGame game = ctfPlayer.getGame();
 
-            // Validate player and game state before storing reconnection data
-            if (game == null || game.getState() == GameState.ENDING) {
-                plugin.getLogger().info("Player " + player.getName() + " disconnected from invalid/ending game state");
-                return;
-            }
-
-            // Only store reconnection data if team is valid
-            Arena.TeamColor playerTeam = ctfPlayer.getTeam();
-            if (playerTeam != null && game.getArena() != null) {
-                // Store reconnection data
-                PlayerReconnectionData reconData = new PlayerReconnectionData(
-                        player.getUniqueId(),
-                        game.getArena().getName(),
-                        playerTeam,
-                        game.getState(),
-                        ctfPlayer.hasFlag()
-                );
-                reconnectionData.put(player.getUniqueId(), reconData);
-                
-                plugin.getLogger().info("Stored reconnection data for " + player.getName() + 
-                    " (Team: " + playerTeam.getName() + ", Arena: " + game.getArena().getName() + ")");
-            } else {
-                plugin.getLogger().warning("Cannot store reconnection data for " + player.getName() + 
-                    " - invalid team (" + playerTeam + ") or arena data");
-            }
+            plugin.getLogger().info("Player " + player.getName() + " disconnected from game - will be sent to lobby on rejoin");
 
             // Handle flag dropping if player had one
             if (ctfPlayer.hasFlag()) {
@@ -1076,8 +991,9 @@ public class GameManager {
                 }
             }
 
-            // Save player data
+            // Save player data and remove from game
             plugin.getPlayerDataManager().savePlayerData(ctfPlayer);
+            removePlayerFromGame(player, false); // Not voluntary, just disconnected
         }
     }
 
