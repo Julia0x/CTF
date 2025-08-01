@@ -750,64 +750,38 @@ public class GameManager {
             plugin.getLogger().info("Player " + player.getName() + " voluntarily left the arena");
         }
     }
-    private void startRespawnCountdown(Player player, CTFPlayer ctfPlayer) {
-        int respawnDelay = plugin.getConfigManager().getGameplaySetting("respawn-delay-seconds", 3);
-
-        // Mark player as in cooldown state
-        playerCooldownStatus.put(player.getUniqueId(), System.currentTimeMillis());
-
-        player.setGameMode(GameMode.SPECTATOR);
-
-        CTFGame game = ctfPlayer.getGame();
-        if (game != null && game.getArena().getLobbySpawn() != null) {
-            Location spectatorPoint = game.getArena().getLobbySpawn().clone();
-            spectatorPoint.add(0, 10, 0);
-            player.teleport(spectatorPoint);
+    /**
+     * Handle voluntary player leave from arena
+     */
+    public void handlePlayerLeaveArena(Player player) {
+        CTFPlayer ctfPlayer = getCTFPlayer(player);
+        if (ctfPlayer != null && ctfPlayer.isInGame()) {
+            removePlayerFromGame(player, true); // Mark as voluntary leave
+            
+            // Send to server lobby
+            plugin.getServerLobbyManager().teleportToServerLobby(player);
+            plugin.getLobbyManager().updatePlayerState(player);
+            
+            // Send confirmation message
+            player.sendMessage(plugin.getConfigManager().getMessage("left-arena-success", 
+                Collections.singletonMap("player", player.getName())));
+            
+            plugin.getLogger().info("Player " + player.getName() + " voluntarily left the arena");
         }
+    }
 
-        player.getInventory().clear();
-        player.getActivePotionEffects().forEach(effect ->
-                player.removePotionEffect(effect.getType()));
+    /**
+     * Clear leave status for a player (used for cleanup)
+     */
+    public void clearPlayerLeaveStatus(Player player) {
+        playersWhoLeftArena.remove(player.getUniqueId());
+    }
 
-        BukkitTask respawnTask = new BukkitRunnable() {
-            int timeLeft = respawnDelay;
-
-            @Override
-            public void run() {
-                if (!player.isOnline() || !ctfPlayer.isInGame()) {
-                    // Player disconnected during cooldown - they should go to lobby on reconnect
-                    cancel();
-                    respawnTasks.remove(player.getUniqueId());
-                    return;
-                }
-
-                if (timeLeft <= 0) {
-                    // Cooldown finished - remove cooldown status
-                    playerCooldownStatus.remove(player.getUniqueId());
-                    
-                    player.setGameMode(GameMode.SURVIVAL);
-                    teleportToTeamSpawn(player, ctfPlayer);
-                    applyBasicLoadoutToPlayer(player);
-                    if (ctfPlayer.getTeam() != null) {
-                        applyTeamColoredArmor(player, ctfPlayer.getTeam());
-                        applyTeamKillEnhancements(player, game, ctfPlayer.getTeam());
-                    }
-                    applySpawnProtection(player);
-                    ctfPlayer.respawn();
-                    respawnTasks.remove(player.getUniqueId());
-                    cancel();
-                    return;
-                }
-
-                Map<String, String> placeholders = new HashMap<>();
-                placeholders.put("time", String.valueOf(timeLeft));
-                player.sendMessage(plugin.getConfigManager().getMessage("respawning", placeholders));
-
-                timeLeft--;
-            }
-        }.runTaskTimer(plugin, 0L, 20L);
-
-        respawnTasks.put(player.getUniqueId(), respawnTask);
+    /**
+     * Check if player has left an arena voluntarily
+     */
+    public boolean hasPlayerLeftArena(Player player) {
+        return playersWhoLeftArena.contains(player.getUniqueId());
     }
 
     /**
