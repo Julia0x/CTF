@@ -29,35 +29,6 @@ public class GameManager {
     private final Map<UUID, BukkitTask> respawnTasks;
     private final Set<UUID> playersWhoLeftArena;
 
-    /**
-     * Stores data needed for player reconnection
-     */
-    private static class PlayerReconnectionData {
-        private final UUID playerId;
-        private final String arenaName;
-        private final Arena.TeamColor team;
-        private final GameState gameState;
-        private final boolean hadFlag;
-        private final long disconnectTime;
-
-        public PlayerReconnectionData(UUID playerId, String arenaName, Arena.TeamColor team,
-                                      GameState gameState, boolean hadFlag) {
-            this.playerId = playerId;
-            this.arenaName = arenaName;
-            this.team = team;
-            this.gameState = gameState;
-            this.hadFlag = hadFlag;
-            this.disconnectTime = System.currentTimeMillis();
-        }
-
-        public UUID getPlayerId() { return playerId; }
-        public String getArenaName() { return arenaName; }
-        public Arena.TeamColor getTeam() { return team; }
-        public GameState getGameState() { return gameState; }
-        public boolean hadFlag() { return hadFlag; }
-        public long getDisconnectTime() { return disconnectTime; }
-    }
-
     public GameManager(CTFCore plugin) {
         this.plugin = plugin;
         this.activeGames = new ConcurrentHashMap<>();
