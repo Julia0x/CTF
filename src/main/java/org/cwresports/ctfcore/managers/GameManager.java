@@ -962,9 +962,25 @@ public class GameManager {
     }
 
     /**
-     * Restore player to their game from reconnection data
+     * Restore player to their game from reconnection data with null safety
      */
     private void restorePlayerToGame(Player player, CTFGame game, PlayerReconnectionData reconData) {
+        // Validate reconnection data
+        if (reconData.getTeam() == null) {
+            plugin.getLogger().warning("Cannot restore player " + player.getName() + " - team data is null");
+            
+            // Clear corrupted reconnection data
+            reconnectionData.remove(player.getUniqueId());
+            
+            // Send to main lobby instead
+            plugin.getServerLobbyManager().teleportToServerLobby(player);
+            plugin.getLobbyManager().onPlayerReconnect(player);
+            
+            player.sendMessage(plugin.getConfigManager().getMessage("reconnection-failed-to-lobby", 
+                Collections.singletonMap("reason", "team data corrupted")));
+            return;
+        }
+
         // Load player data
         Map<String, Object> playerData = plugin.getPlayerDataManager().loadPlayerData(player.getUniqueId());
         CTFPlayer ctfPlayer = new CTFPlayer(player, playerData);
@@ -976,7 +992,7 @@ public class GameManager {
         game.addPlayer(ctfPlayer);
         players.put(player.getUniqueId(), ctfPlayer);
 
-        // Show reconnection message
+        // Show reconnection message with safe team access
         Map<String, String> placeholders = new HashMap<>();
         placeholders.put("arena", game.getArena().getName());
         placeholders.put("team", reconData.getTeam().getName());
@@ -1002,7 +1018,7 @@ public class GameManager {
         plugin.getScoreboardManager().updatePlayerScoreboard(player);
         plugin.getMessageManager().updateGameTimeBossBar(game);
 
-        // Clear reconnection data
+        // Clear reconnection data after successful restoration
         reconnectionData.remove(player.getUniqueId());
     }
 
