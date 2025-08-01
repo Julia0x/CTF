@@ -29,6 +29,7 @@ public class GameManager {
     private final Map<UUID, BukkitTask> respawnTasks;
     private final Map<UUID, PlayerReconnectionData> reconnectionData;
     private final Map<UUID, Long> playerCooldownStatus;
+    private final Set<UUID> playersWhoLeftArena;
 
     /**
      * Stores data needed for player reconnection
