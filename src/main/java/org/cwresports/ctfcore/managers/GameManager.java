@@ -130,19 +130,44 @@ public class GameManager {
     }
 
     /**
-     * Enhanced player removal with proper cleanup
+     * Enhanced player removal with proper cleanup and team balance checking
      */
     public void removePlayerFromGame(Player player) {
+        removePlayerFromGame(player, false);
+    }
+
+    /**
+     * Enhanced player removal with leave tracking and auto-win logic
+     */
+    public void removePlayerFromGame(Player player, boolean playerLeftVoluntarily) {
         CTFPlayer ctfPlayer = players.get(player.getUniqueId());
         if (ctfPlayer == null || !ctfPlayer.isInGame()) {
             return;
         }
 
         CTFGame game = ctfPlayer.getGame();
+        Arena.TeamColor playerTeam = ctfPlayer.getTeam();
 
         // Handle flag carrier leaving
         if (ctfPlayer.hasFlag()) {
             game.returnFlag(ctfPlayer);
+        }
+
+        // If player left voluntarily, mark them as unable to rejoin
+        if (playerLeftVoluntarily) {
+            playersWhoLeftArena.add(player.getUniqueId());
+            
+            // Broadcast leave message to other players
+            if (playerTeam != null && game.getState() == GameState.PLAYING) {
+                Map<String, String> placeholders = new HashMap<>();
+                placeholders.put("player", player.getName());
+                placeholders.put("team_color", playerTeam.getColorCode());
+                placeholders.put("team_name", playerTeam.getName());
+                game.broadcastMessage("player-left-game", placeholders);
+                
+                plugin.getLogger().info("Player " + player.getName() + 
+                    " left the game voluntarily from " + playerTeam.getName() + " team");
+            }
         }
 
         // Save player data before removing
@@ -185,6 +210,11 @@ public class GameManager {
 
         // Update lobby items to server lobby state
         plugin.getLobbyManager().updatePlayerState(player);
+
+        // Check for team balance and auto-win conditions
+        if (game.getState() == GameState.PLAYING) {
+            checkTeamBalanceAndAutoWin(game);
+        }
 
         // Update remaining players' boss bars and scoreboards
         if (!game.getPlayers().isEmpty()) {
