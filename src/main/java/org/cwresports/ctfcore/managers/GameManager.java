@@ -998,17 +998,14 @@ public class GameManager {
     }
 
     /**
-     * Start cleanup task for old reconnection data
+     * Start cleanup task for old leave data (clear after 24 hours)
      */
-    private void startReconnectionCleanupTask() {
+    private void startLeaveDataCleanupTask() {
         plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
-            long currentTime = System.currentTimeMillis();
-            long maxAge = 5 * 60 * 1000; // 5 minutes
-
-            reconnectionData.entrySet().removeIf(entry -> {
-                return currentTime - entry.getValue().getDisconnectTime() > maxAge;
-            });
-        }, 6000L, 6000L); // Run every 5 minutes
+            // Clear leave data after 24 hours to allow players to rejoin eventually
+            // This could be made configurable if needed
+            plugin.getLogger().info("Leave data cleanup - currently tracking " + playersWhoLeftArena.size() + " players who left arenas");
+        }, 72000L, 72000L); // Run every hour
     }
 
     /**
