@@ -176,7 +176,6 @@ public class GameManager {
         // Clear spawn protection and other player states
         removeSpawnProtection(player);
         killStreaks.remove(player.getUniqueId());
-        playerCooldownStatus.remove(player.getUniqueId());
 
         // Cancel respawn task if active and reset game mode
         BukkitTask respawnTask = respawnTasks.remove(player.getUniqueId());
