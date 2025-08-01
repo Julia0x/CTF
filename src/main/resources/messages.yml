@@ -43,6 +43,13 @@ reconnection-failed: "&c❌ Could not reconnect to your previous game."
 reconnection-failed-to-lobby: "&c❌ Reconnection failed ({reason}). Returning to server lobby."
 cooldown-exit-to-lobby: "&e⚠️ You exited during cooldown. Returning to server lobby."
 game-ended-to-lobby: "&e📍 Game in arena &e{arena} &ehas ended. Returning to server lobby."
+left-arena-no-rejoin: "&e🚪 You previously left an arena. You're now in the server lobby."
+left-arena-success: "&a✅ Successfully left the arena. You're now in the server lobby."
+
+# Game messages
+player-left-game: "&c📤 {team_color}{player} &cleft the {team_color}{team_name} &cteam!"
+team-abandoned-auto-win: "&a🏆 {winning_team_color}{winning_team_name} team &awins! (Other team abandoned)"
+instant-respawn: "&a💚 Respawned instantly! Get back in the fight!"
 
 # WorldGuard integration
 worldguard-region-not-found: "&c❌ WorldGuard region &e{region} &cnot found in world &e{world}&c."
