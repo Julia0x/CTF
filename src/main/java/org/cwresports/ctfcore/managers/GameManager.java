@@ -28,6 +28,7 @@ public class GameManager {
     private final Map<Arena.TeamColor, Integer> teamKillCounts;
     private final Map<UUID, BukkitTask> respawnTasks;
     private final Map<UUID, PlayerReconnectionData> reconnectionData;
+    private final Map<UUID, Long> playerCooldownStatus;
 
     /**
      * Stores data needed for player reconnection
