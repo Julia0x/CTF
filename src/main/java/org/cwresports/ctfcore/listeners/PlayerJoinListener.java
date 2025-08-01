@@ -22,22 +22,8 @@ public class PlayerJoinListener implements Listener {
         // Remove default vanilla join message
         event.setJoinMessage(null);
         
-        try {
-            // ENHANCED: Handle player reconnection with improved state restoration
-            plugin.getGameManager().handlePlayerReconnection(event.getPlayer());
-        } catch (Exception e) {
-            // Log the error and send player to server lobby as fallback
-            plugin.getLogger().severe("Error handling player reconnection for " + event.getPlayer().getName() + ": " + e.getMessage());
-            e.printStackTrace();
-            
-            // Fallback: ensure player is sent to server lobby
-            plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                if (event.getPlayer().isOnline()) {
-                    plugin.getServerLobbyManager().teleportToServerLobby(event.getPlayer());
-                    plugin.getLobbyManager().onPlayerReconnect(event.getPlayer());
-                }
-            }, 5L);
-        }
+        // Simple join handling - always send to lobby with autojoin items
+        plugin.getGameManager().handlePlayerJoin(event.getPlayer());
         
         // Update scoreboard for new/returning player
         plugin.getScoreboardManager().updatePlayerScoreboard(event.getPlayer());
@@ -45,19 +31,13 @@ public class PlayerJoinListener implements Listener {
         // Update tab list for new player and others
         plugin.getTabListManager().onPlayerJoin(event.getPlayer());
         
-        // Send welcome message after reconnection processing
+        // Send welcome message after lobby setup
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             if (event.getPlayer().isOnline()) {
-                // Check if player was successfully reconnected to a game
-                if (plugin.getGameManager().getCTFPlayer(event.getPlayer()) != null) {
-                    // Player was reconnected to a game - welcome message was sent by GameManager
-                    return;
-                }
-                
                 // Player is in server lobby - send general welcome message
                 event.getPlayer().sendMessage(plugin.getConfigManager().getMessage("welcome-message", 
                     java.util.Collections.singletonMap("player", event.getPlayer().getName())));
             }
-        }, 20L); // 1 second delay to allow reconnection processing
+        }, 20L); // 1 second delay
     }
 }
