@@ -618,10 +618,13 @@ public class GameManager {
     }
 
     /**
-     * Start respawn countdown with spectator mode
+     * Start respawn countdown with spectator mode and cooldown tracking
      */
     private void startRespawnCountdown(Player player, CTFPlayer ctfPlayer) {
         int respawnDelay = plugin.getConfigManager().getGameplaySetting("respawn-delay-seconds", 3);
+
+        // Mark player as in cooldown state
+        playerCooldownStatus.put(player.getUniqueId(), System.currentTimeMillis());
 
         player.setGameMode(GameMode.SPECTATOR);
 
@@ -642,12 +645,16 @@ public class GameManager {
             @Override
             public void run() {
                 if (!player.isOnline() || !ctfPlayer.isInGame()) {
+                    // Player disconnected during cooldown - they should go to lobby on reconnect
                     cancel();
                     respawnTasks.remove(player.getUniqueId());
                     return;
                 }
 
                 if (timeLeft <= 0) {
+                    // Cooldown finished - remove cooldown status
+                    playerCooldownStatus.remove(player.getUniqueId());
+                    
                     player.setGameMode(GameMode.SURVIVAL);
                     teleportToTeamSpawn(player, ctfPlayer);
                     applyBasicLoadoutToPlayer(player);
