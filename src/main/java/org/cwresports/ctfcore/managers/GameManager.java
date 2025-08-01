@@ -1029,8 +1029,6 @@ public class GameManager {
         teamKillCounts.clear();
         players.clear();
         activeGames.clear();
-        reconnectionData.clear();
-        playerCooldownStatus.clear();
         playersWhoLeftArena.clear();
     }
 
