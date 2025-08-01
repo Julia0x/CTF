@@ -1,0 +1,113 @@
+# CTF-Core Configuration File
+# Plugin by CWReSports
+
+# Configuration version - DO NOT MODIFY
+config-version: "1.1.0"
+
+# Settings for game flow and rules
+gameplay:
+  min-players-to-start: 8
+  max-players-per-arena: 8  # REDUCED FROM 16 TO 8
+  pre-game-countdown-seconds: 20
+  game-duration-minutes: 10
+  flags-to-win: 3
+  kills-to-win: 25  # NEW: 25 kills wins if no team has 3 flags
+  flag-drop-return-timer-seconds: 5
+  flag-capture-hold-seconds: 3
+  respawn-delay-seconds: 3
+  spawn-protection-seconds: 5
+  team-balance-threshold: 2
+  max-players-per-team: 4
+  auto-leave-delay-seconds: 10
+
+# Autojoin system configuration
+autojoin:
+  enabled: true
+  prefer-populated-games: true
+  min-players-threshold: 2
+  item-name: "&a&lAuto Join Game"
+  item-lore:
+    - "&7Click to automatically join"
+    - "&7a game with other players!"
+    - ""
+    - "&ePrefers games with more players"
+
+# Server lobby configuration
+server-lobby:
+  give-items: true
+  clear-inventory: true
+
+# Flag capture system settings
+flag-capture:
+  mode: "automatic"  # "automatic" or "right-click"
+  automatic-radius: 2  # Radius in blocks for automatic capture (configurable)
+  capture-time-seconds: 3  # Time required to capture flag (configurable)
+  show-capture-title: true  # Show title during capture process
+  allow-movement-in-area: true  # Allow player to move within capture area
+  instant-capture: true  # If true, capture flag instantly when entering area
+  instant-break: false  # If true, take enemy flag instantly when approaching
+
+# Experience and level system
+experience:
+  per-kill: 10              # XP gained per kill
+  per-capture: 50           # XP gained per flag capture
+  per-flag-return: 25       # XP gained per flag return
+  level-up-base-xp: 100     # Base XP required to reach level 2
+  level-up-multiplier: 50   # Additional XP per level (level 3 = 150, level 4 = 200, etc.)
+
+# Currency system (requires Vault)
+currency:
+  participation-reward: 25  # Base coins for participating in a game
+  win-reward: 100          # Bonus coins for winning a game
+  per-kill: 5              # Coins per kill
+  per-capture: 20          # Coins per flag capture
+  per-return: 10           # Coins per flag return
+
+# Server lobby configuration
+server:
+  lobby-spawn: null # Set with /ctfadmin setserverlobby
+
+# Sound configuration for key events (using Paper 1.21+ sound names)
+sounds:
+  flag_taken: "BLOCK_NOTE_BLOCK_PLING"
+  flag_captured: "ENTITY_PLAYER_LEVELUP"
+  flag_dropped: "BLOCK_ANVIL_BREAK"
+  flag_returned: "BLOCK_NOTE_BLOCK_CHIME"
+  kill_player: "ENTITY_EXPERIENCE_ORB_PICKUP"
+  player_death: "ENTITY_PLAYER_DEATH"
+  game_start: "ENTITY_ENDER_DRAGON_GROWL"
+  game_end: "UI_TOAST_CHALLENGE_COMPLETE"
+  countdown: "BLOCK_NOTE_BLOCK_HAT"
+  team_join: "ENTITY_PLAYER_LEVELUP"
+  game_win: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+  game_lose: "ENTITY_VILLAGER_NO"
+  level_up: "ENTITY_PLAYER_LEVELUP"
+  autojoin_found: "ENTITY_PLAYER_LEVELUP"
+  autojoin_searching: "BLOCK_NOTE_BLOCK_PLING"
+
+# Chat formatting
+chat:
+  enabled: true
+  format: "[{level}] {luckperms_prefix}{player}{luckperms_suffix}: {message}"
+
+# Title and boss bar settings
+messages:
+  show-titles: true
+  show-boss-bar: true
+  boss-bar-color: "YELLOW"
+  boss-bar-style: "SOLID"
+
+# Arena boundaries
+boundaries:
+  teleport-back-on-exit: true
+  damage-on-boundary-exit: false
+  warning-message-enabled: true
+
+# Debug settings
+debug:
+  enabled: false
+  log-arena-events: false
+  log-player-movements: false
+
+# Date format for placeholders
+date-format: "MM/dd/yy"
