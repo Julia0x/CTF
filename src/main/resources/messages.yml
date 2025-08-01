@@ -40,6 +40,9 @@ teleported-to-server-lobby: "&a🏠 Teleported to server lobby."
 # Reconnection messages
 reconnected-to-game: "&a🔄 &eReconnected to game in arena &a{arena} &eas {team} team!"
 reconnection-failed: "&c❌ Could not reconnect to your previous game."
+reconnection-failed-to-lobby: "&c❌ Reconnection failed ({reason}). Returning to server lobby."
+cooldown-exit-to-lobby: "&e⚠️ You exited during cooldown. Returning to server lobby."
+game-ended-to-lobby: "&e📍 Game in arena &e{arena} &ehas ended. Returning to server lobby."
 
 # WorldGuard integration
 worldguard-region-not-found: "&c❌ WorldGuard region &e{region} &cnot found in world &e{world}&c."
